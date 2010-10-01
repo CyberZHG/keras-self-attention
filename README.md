@@ -1,6 +1,6 @@
 # Keras Self-Attention
 
-[![Travis](https://travis-ci.org/CyberZHG/keras-self-attention.svg)](https://travis-ci.org/CyberZHG/keras-self-attention)
+[![Travis](https://travis-ci.com/CyberZHG/keras-self-attention.svg)](https://travis-ci.com/CyberZHG/keras-self-attention)
 [![Coverage](https://coveralls.io/repos/github/CyberZHG/keras-self-attention/badge.svg?branch=master)](https://coveralls.io/github/CyberZHG/keras-self-attention)
 [![PyPI](https://img.shields.io/pypi/pyversions/keras-self-attention.svg)](https://pypi.org/project/keras-self-attention/)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5a99d0419bec42cfb73c4af06d746c8a)](https://www.codacy.com/project/CyberZHG/keras-self-attention/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CyberZHG/keras-self-attention&amp;utm_campaign=Badge_Grade_Dashboard)
