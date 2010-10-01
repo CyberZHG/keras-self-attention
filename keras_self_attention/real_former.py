@@ -34,22 +34,11 @@ class ResidualScaledDotProductAttention(keras.layers.Layer):
         base_config = super(ResidualScaledDotProductAttention, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-    def compute_output_shape(self, input_shape):
-        if len(input_shape) == 4:
-            query_shape, key_shape, value_shape = input_shape[:3]
-        else:
-            query_shape = key_shape = value_shape = input_shape[0]
-        output_shape = query_shape[:-1] + value_shape[-1:]
-        if self.return_attention:
-            attention_shape = query_shape[:2] + (key_shape[1],)
-            return [output_shape, attention_shape]
-        return output_shape
-
     def compute_mask(self, inputs, mask=None):
         mask = mask[0]
         if self.return_attention:
-            mask = [mask, None]
-        return mask
+            mask = [mask, mask[-1], None]
+        return [mask, mask[-1]]
 
     def call(self, inputs, mask=None, **kwargs):
         if len(inputs) == 4:
@@ -61,7 +50,7 @@ class ResidualScaledDotProductAttention(keras.layers.Layer):
             mask = mask[0]
         feature_dim = K.shape(query)[-1]
         e = K.batch_dot(query, key, axes=2) / K.sqrt(K.cast(feature_dim, dtype=K.floatx()))
-        e += prev
+        new_prev = e = e + prev
         if self.history_only:
             query_len, key_len = K.shape(query)[1], K.shape(key)[1]
             indices = K.expand_dims(K.arange(0, key_len), axis=0)
@@ -73,6 +62,7 @@ class ResidualScaledDotProductAttention(keras.layers.Layer):
         e = K.exp(e - K.max(e, axis=-1, keepdims=True))
         self.attention = e / K.sum(e, axis=-1, keepdims=True)
         v = K.batch_dot(self.attention, value)
+        output = [v, new_prev]
         if self.return_attention:
-            return [v, self.attention]
-        return v
+            output.append(self.attention)
+        return output

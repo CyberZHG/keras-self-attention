@@ -1,4 +1,4 @@
-# Keras Self-Attention
+# Keras自注意力
 
 [![Travis](https://travis-ci.com/CyberZHG/keras-self-attention.svg)](https://travis-ci.com/CyberZHG/keras-self-attention)
 [![Coverage](https://coveralls.io/repos/github/CyberZHG/keras-self-attention/badge.svg?branch=master)](https://coveralls.io/github/CyberZHG/keras-self-attention)
@@ -15,17 +15,17 @@ Attention mechanism for processing sequential data that considers the context fo
 * ![](https://user-images.githubusercontent.com/853842/44248590-1df34180-a21e-11e8-8ff1-268217f466ba.gif)
 * ![](https://user-images.githubusercontent.com/853842/44249018-8ba06d00-a220-11e8-80e3-802677b658ed.gif)
 
-## Install
+## 安装
 
 ```bash
 pip install keras-self-attention
 ```
 
-## Usage
+## 使用
 
-### Basic
+### 基本
 
-By default, the attention layer uses additive attention and considers the whole context while calculating the relevance. The following code creates an attention layer that follows the equations in the first section (`attention_activation` is the activation function of `e_{t, t'}`):
+默认情况下，注意力层使用加性注意力机制，并使用全部上下文进行计算。下面的代码根据页首的公式创建了一个注意力层（`attention_activation`是注意力权重`e_{t, t'}`）：
 
 ```python
 import keras
@@ -48,9 +48,9 @@ model.compile(
 model.summary()
 ```
 
-### Local Attention
+### 局部注意力
 
-The global context may be too broad for one piece of data. The parameter `attention_width` controls the width of the local context:
+参数`attention_width`控制着局部注意力的宽度：
 
 ```python
 from keras_self_attention import SeqSelfAttention
@@ -62,9 +62,9 @@ SeqSelfAttention(
 )
 ```
 
-### Multiplicative Attention
+### 乘性注意力
 
-You can use multiplicative attention by setting `attention_type`:
+用`attention_type`来改变注意力机制的计算方法：
 
 ![](https://user-images.githubusercontent.com/853842/44253887-a03a3080-a233-11e8-9d49-3fd7e622a0f7.gif)
 
@@ -81,11 +81,11 @@ SeqSelfAttention(
 )
 ```
 
-### Regularizer
+### 正则化
 
 ![](https://user-images.githubusercontent.com/853842/44250188-f99b6300-a225-11e8-8fab-8dcf0d99616e.gif)
 
-To use the regularizer, set `attention_regularizer_weight` to a positive number:
+通过将`attention_regularizer_weight`设置为一个正数来使用正则化：
 
 ```python
 import keras
@@ -112,7 +112,7 @@ model.compile(
 model.summary(line_length=100)
 ```
 
-### Load the Model
+### 加载模型
 
 Make sure to add `SeqSelfAttention` to custom objects:
 
@@ -122,9 +122,9 @@ import keras
 keras.models.load_model(model_path, custom_objects=SeqSelfAttention.get_custom_objects())
 ```
 
-### History Only
+### 只使用历史进行计算
 
-Set `history_only` to `True` when only historical data could be used:
+对于decoder等场景，为了保持输出固定只能使用上文的信息：
 
 ```python
 SeqSelfAttention(
@@ -134,6 +134,6 @@ SeqSelfAttention(
 )
 ```
 
-### Multi-Head
+### 多头注意力
 
-Please refer to [keras-multi-head](https://github.com/CyberZHG/keras-multi-head).
+参考[keras-multi-head](https://github.com/CyberZHG/keras-multi-head)。

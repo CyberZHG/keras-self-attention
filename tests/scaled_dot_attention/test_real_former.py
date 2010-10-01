@@ -33,7 +33,7 @@ class TestResidualScaledDotProductAttention(unittest.TestCase):
             ],
             name='Embedding',
         )(input_layer)
-        att_layer, att_weights = ResidualScaledDotProductAttention(
+        att_layer, _, att_weights = ResidualScaledDotProductAttention(
             history_only=True,
             return_attention=True,
             name='Attention',
@@ -87,7 +87,7 @@ class TestResidualScaledDotProductAttention(unittest.TestCase):
             ],
             name='Embedding',
         )(input_layer)
-        att_layer = ResidualScaledDotProductAttention(name='Attention')([embed_layer, prev_layer])
+        att_layer, _ = ResidualScaledDotProductAttention(name='Attention')([embed_layer, prev_layer])
         model = keras.models.Model(inputs=[input_layer, prev_layer], outputs=att_layer)
         model.compile(optimizer='adam', loss='mse')
         inputs = np.array([[1, 2, 3, 1, 0]])

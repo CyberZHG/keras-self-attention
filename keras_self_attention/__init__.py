@@ -3,4 +3,4 @@ from .seq_weighted_attention import SeqWeightedAttention
 from .scaled_dot_attention import ScaledDotProductAttention
 from .real_former import ResidualScaledDotProductAttention
 
-__version__ = '0.48.0'
+__version__ = '0.49.0'
