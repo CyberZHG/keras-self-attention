@@ -1,0 +1,3 @@
+coverage
+m2r
+twine
