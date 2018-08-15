@@ -1,7 +1,7 @@
 # Keras Global Self-Attention
 
-[![Travis](https://travis-ci.org/PoWWoP/keras-global-self-attention.svg)](https://travis-ci.org/PoWWoP/keras-global-self-attention)
-[![Coverage](https://coveralls.io/repos/github/PoWWoP/keras-global-self-attention/badge.svg?branch=master)](https://coveralls.io/github/PoWWoP/keras-global-self-attention)
+[![Travis](https://travis-ci.org/CyberZHG/keras-global-self-attention.svg)](https://travis-ci.org/CyberZHG/keras-global-self-attention)
+[![Coverage](https://coveralls.io/repos/github/CyberZHG/keras-global-self-attention/badge.svg?branch=master)](https://coveralls.io/github/CyberZHG/keras-global-self-attention)
 
 
 Attention mechanism for processing sequence data that considers the global context for each timestamp.

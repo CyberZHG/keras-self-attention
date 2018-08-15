@@ -3,13 +3,13 @@ Keras Global Self-Attention
 ===========================
 
 
-.. image:: https://travis-ci.org/PoWWoP/keras-global-self-attention.svg
-   :target: https://travis-ci.org/PoWWoP/keras-global-self-attention
+.. image:: https://travis-ci.org/CyberZHG/keras-global-self-attention.svg
+   :target: https://travis-ci.org/CyberZHG/keras-global-self-attention
    :alt: Travis
 
 
-.. image:: https://coveralls.io/repos/github/PoWWoP/keras-global-self-attention/badge.svg?branch=master
-   :target: https://coveralls.io/github/PoWWoP/keras-global-self-attention
+.. image:: https://coveralls.io/repos/github/CyberZHG/keras-global-self-attention/badge.svg?branch=master
+   :target: https://coveralls.io/github/CyberZHG/keras-global-self-attention
    :alt: Coverage
 
 

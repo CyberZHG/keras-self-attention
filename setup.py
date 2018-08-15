@@ -2,9 +2,9 @@ from setuptools import setup
 
 setup(
     name='keras-global-self-attention',
-    version='0.0.6',
+    version='0.0.7',
     packages=['keras_global_self_attention'],
-    url='https://github.com/PoWWoP/keras-global-self-attention',
+    url='https://github.com/CyberZHG/keras-global-self-attention',
     license='MIT',
     author='CyberZHG',
     author_email='CyberZHG@gmail.com',
