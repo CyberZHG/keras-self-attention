@@ -10,7 +10,7 @@ install:
   - pip install pycodestyle
   - pip install coverage
   - pip install coveralls
-  - pip install keras-bi-lm
+  - pip install keras-global-self-attention
 before_script:
   - bash lint.sh
 script:
