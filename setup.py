@@ -2,13 +2,13 @@ from setuptools import setup
 
 setup(
     name='keras-global-self-attention',
-    version='0.0.1',
+    version='0.0.3',
     packages=['keras_global_self_attention'],
     url='https://github.com/PoWWoP/keras-global-self-attention',
     license='MIT',
     author='CyberZHG',
     author_email='CyberZHG@gmail.com',
-    description='',
+    description='Attention mechanism for processing sequence data that considers the global context for each timestamp',
     long_description=open('README.rst', 'r').read(),
     install_requires=[
         'numpy',

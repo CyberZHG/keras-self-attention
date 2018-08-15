@@ -24,7 +24,7 @@ class Attention(keras.layers.Layer):
 
         self.kernel_regularizer, self.bias_regularizer = kernel_regularizer, bias_regularizer
 
-        self.Wx, self.Wt, self.bt = None, None, None
+        self.Wx, self.Wt, self.bh = None, None, None
         self.Wa, self.ba = None, None
 
         super(Attention, self).__init__(**kwargs)
@@ -32,16 +32,16 @@ class Attention(keras.layers.Layer):
     def build(self, input_shape):
         feature_dim = input_shape[2]
 
-        self.Wx = self.add_weight(shape=(feature_dim, self.units),
-                                  name='{}_Wx'.format(self.name),
-                                  initializer=keras.initializers.get('glorot_normal'),
-                                  regularizer=self.kernel_regularizer)
         self.Wt = self.add_weight(shape=(feature_dim, self.units),
                                   name='{}_Wt'.format(self.name),
                                   initializer=keras.initializers.get('glorot_normal'),
                                   regularizer=self.kernel_regularizer)
-        self.bt = self.add_weight(shape=(self.units,),
-                                  name='{}_bt'.format(self.name),
+        self.Wx = self.add_weight(shape=(feature_dim, self.units),
+                                  name='{}_Wx'.format(self.name),
+                                  initializer=keras.initializers.get('glorot_normal'),
+                                  regularizer=self.kernel_regularizer)
+        self.bh = self.add_weight(shape=(self.units,),
+                                  name='{}_bh'.format(self.name),
                                   initializer=keras.initializers.get('zeros'),
                                   regularizer=self.bias_regularizer)
 
@@ -54,17 +54,21 @@ class Attention(keras.layers.Layer):
                                   initializer=keras.initializers.get('zeros'),
                                   regularizer=self.bias_regularizer)
 
-        self.trainable_weights = [self.Wx, self.Wt, self.bt, self.Wa, self.ba]
+        self.trainable_weights = [self.Wx, self.Wt, self.bh, self.Wa, self.ba]
         super(Attention, self).build(input_shape)
 
     def call(self, inputs, mask=None, **kwargs):
         input_shape = K.shape(inputs)
         batch_size, input_len = input_shape[0], input_shape[1]
-        k, q = K.dot(inputs, self.Wx), K.dot(inputs, self.Wt)
-        k = K.tile(K.expand_dims(k, 1), K.stack([1, input_len, 1, 1]))
+        # h_{t, t'} = \tanh(x_t^T W_t + x_{t'}^T W_x + b_h)
+        q, k = K.dot(inputs, self.Wt), K.dot(inputs, self.Wx)
         q = K.tile(K.expand_dims(q, 2), K.stack([1, 1, input_len, 1]))
-        h = K.tanh(k + q + self.bt)
-        e = K.exp(K.reshape(K.dot(h, self.Wa) + self.ba, (batch_size, input_len, input_len)))
+        k = K.tile(K.expand_dims(k, 1), K.stack([1, input_len, 1, 1]))
+        h = K.tanh(q + k + self.bh)
+        # e_{t, t'} = \sigma(W_a h_{t, t'} + b_a)
+        e = K.sigmoid(K.reshape(K.dot(h, self.Wa) + self.ba, (batch_size, input_len, input_len)))
+        # a_{t} = \text{softmax}(e_t)
+        e = K.exp(e)
         if mask is not None:
             mask = K.cast(mask, K.floatx())
             mask = K.expand_dims(mask)
