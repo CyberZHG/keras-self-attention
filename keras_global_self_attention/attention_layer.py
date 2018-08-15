@@ -67,6 +67,7 @@ class Attention(keras.layers.Layer):
         e = K.exp(K.reshape(K.dot(h, self.Wa) + self.ba, (batch_size, input_len, input_len)))
         if mask is not None:
             mask = K.cast(mask, K.floatx())
+            mask = K.expand_dims(mask)
             e = K.permute_dimensions(K.permute_dimensions(e * mask, (0, 2, 1)) * mask, (0, 2, 1))
         s = K.sum(e, axis=-1)
         s = K.tile(K.expand_dims(s, axis=-1), K.stack([1, 1, input_len]))
