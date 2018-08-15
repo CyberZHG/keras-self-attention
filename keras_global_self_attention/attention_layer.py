@@ -76,6 +76,7 @@ class Attention(keras.layers.Layer):
         s = K.sum(e, axis=-1)
         s = K.tile(K.expand_dims(s, axis=-1), K.stack([1, 1, input_len]))
         a = e / (s + K.epsilon())
+        # l_t = \sum_{t'} a_{t, t'} x_{t'}
         inputs = K.permute_dimensions(inputs, (0, 2, 1))
         v = K.permute_dimensions(K.batch_dot(inputs, K.permute_dimensions(a, (0, 2, 1))), (0, 2, 1))
         if self.return_attention:
