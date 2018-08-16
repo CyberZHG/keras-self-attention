@@ -1,16 +1,23 @@
 language: python
+env:
+  matrix:
+    - BLAS_LIB=OpenBLAS
 python:
   - "2.7"
   - "3.6"
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install libopenblas-base libopenblas-dev -y
 install:
   - pip install --upgrade pip
   - pip install numpy
   - pip install tensorflow
+  - pip install theano
   - pip install keras
   - pip install pycodestyle
   - pip install coverage
   - pip install coveralls
-  - pip install keras-global-self-attention
+  - pip install keras-self-attention
 before_script:
   - bash lint.sh
 script:

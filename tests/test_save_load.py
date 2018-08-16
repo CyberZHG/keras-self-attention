@@ -2,7 +2,7 @@ import unittest
 import os
 import tempfile
 import keras
-from keras_global_self_attention import Attention
+from keras_self_attention import Attention
 
 
 class TestSaveLoad(unittest.TestCase):

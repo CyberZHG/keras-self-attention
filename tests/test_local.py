@@ -1,13 +1,34 @@
+import os
+import sys
 import unittest
 import random
 import numpy
 import keras
+import keras.backend as K
 from keras_self_attention import Attention
+if sys.version_info[0] >= 3:
+    import importlib
 
 
-class TestMask(unittest.TestCase):
+class TestLocal(unittest.TestCase):
 
-    def test_return_attention(self):
+    def setUp(self):
+        self.backend = K.backend()
+
+    def tearDown(self):
+        TestLocal.set_keras_backend(self.backend)
+
+    @staticmethod
+    def set_keras_backend(backend):
+        if K.backend() != backend:
+            os.environ['KERAS_BACKEND'] = backend
+            if sys.version_info[0] >= 3:
+                import importlib
+                importlib.reload(K)
+            else:
+                reload(K)
+
+    def check_local_range(self):
         sentences = [
             ['All', 'work', 'and', 'no', 'play'],
             ['makes', 'Jack', 'a', 'dull', 'boy', '.'],
@@ -36,6 +57,7 @@ class TestMask(unittest.TestCase):
         lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=16,
                                                             return_sequences=True))(embd)
         att, weights = Attention(return_attention=True,
+                                 attention_width=5,
                                  kernel_regularizer=keras.regularizers.l2(1e-4),
                                  bias_regularizer=keras.regularizers.l1(1e-4))(lstm)
         dense = keras.layers.Dense(units=5)(att)
@@ -52,10 +74,18 @@ class TestMask(unittest.TestCase):
         for i, sentence in enumerate(sentences):
             for j in range(sentence_len):
                 for k in range(sentence_len):
-                    if j < len(sentence) and k < len(sentence):
+                    if j < len(sentence) and k < len(sentence) and abs(j - k) <= 2:
                         self.assertGreater(attention[i][j][k], 0.0)
                     else:
                         self.assertEqual(attention[i][j][k], 0.0)
                 if j < len(sentence):
                     self.assertTrue(abs(numpy.sum(attention[i][j]) - 1.0) < 1e-6)
                     self.assertTrue(abs(numpy.sum(attention[i, :, j]) - 1.0) > 1e-6)
+
+    def test_tensorflow(self):
+        TestLocal.set_keras_backend('tensorflow')
+        self.check_local_range()
+
+    def test_theano(self):
+        TestLocal.set_keras_backend('theano')
+        self.check_local_range()

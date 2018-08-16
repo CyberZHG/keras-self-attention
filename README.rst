@@ -3,17 +3,17 @@ Keras Global Self-Attention
 ===========================
 
 
-.. image:: https://travis-ci.org/CyberZHG/keras-global-self-attention.svg
-   :target: https://travis-ci.org/CyberZHG/keras-global-self-attention
+.. image:: https://travis-ci.org/CyberZHG/keras-self-attention.svg
+   :target: https://travis-ci.org/CyberZHG/keras-self-attention
    :alt: Travis
 
 
-.. image:: https://coveralls.io/repos/github/CyberZHG/keras-global-self-attention/badge.svg?branch=master
-   :target: https://coveralls.io/github/CyberZHG/keras-global-self-attention
+.. image:: https://coveralls.io/repos/github/CyberZHG/keras-self-attention/badge.svg?branch=master
+   :target: https://coveralls.io/github/CyberZHG/keras-self-attention
    :alt: Coverage
 
 
-Attention mechanism for processing sequence data that considers the global context for each timestamp.
+Attention mechanism for processing sequence data that considers the context for each timestamp.
 
 
 * 
@@ -41,7 +41,7 @@ Install
 
 .. code-block:: bash
 
-   pip install keras-global-self-attention
+   pip install keras-self-attention
 
 Usage
 -----
@@ -49,7 +49,7 @@ Usage
 .. code-block:: python
 
    import keras
-   from keras_global_self_attention import Attention
+   from keras_self_attention import Attention
 
 
    model = keras.models.Sequential()
