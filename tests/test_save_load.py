@@ -1,5 +1,6 @@
 import unittest
 import os
+import random
 import tempfile
 import keras
 from keras_self_attention import Attention
@@ -22,7 +23,8 @@ class TestSaveLoad(unittest.TestCase):
             metrics=['categorical_accuracy'],
         )
 
-        model_path = os.path.join(tempfile.gettempdir(), 'keras_global_self_att_test_save_load.h5')
+        model.summary()
+        model_path = os.path.join(tempfile.gettempdir(), 'keras_global_self_att_test_save_load_%f.h5' % random.random())
         model.save(model_path)
         model = keras.models.load_model(model_path, custom_objects={'Attention': Attention})
         model.summary()

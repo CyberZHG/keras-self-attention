@@ -10,6 +10,8 @@ class Attention(keras.layers.Layer):
                  return_attention=False,
                  kernel_regularizer=None,
                  bias_regularizer=None,
+                 use_relevance_bias=True,
+                 use_attention_bias=True,
                  attention_activation=None,
                  **kwargs):
         """Layer initialization.
@@ -19,7 +21,9 @@ class Attention(keras.layers.Layer):
         :param return_attention: Whether return the attention weights for visualization.
         :param kernel_regularization: The regularization for weight matrices.
         :param bias_regularization: The regularization for biases.
-        :param attention_activation: The activation used for calculating attention weights.
+        :param use_relevance_bias: Whether using bias while calculating the relevance of inputs features.
+        :param use_attention_bias: Whether using bias while calculating the weights of attention.
+        :param attention_activation: The activation used for calculating the weights of attention.
         :param kwargs: Parameters for parent class.
         """
         self.supports_masking = True
@@ -27,7 +31,10 @@ class Attention(keras.layers.Layer):
         self.attention_width = attention_width
         self.return_attention = return_attention
 
-        self.kernel_regularizer, self.bias_regularizer = kernel_regularizer, bias_regularizer
+        self.use_relevance_bias = use_relevance_bias
+        self.use_attention_bias = use_attention_bias
+        self.kernel_regularizer = kernel_regularizer
+        self.bias_regularizer = bias_regularizer
         self.attention_activation = attention_activation
 
         self.Wx, self.Wt, self.bh = None, None, None
@@ -46,36 +53,49 @@ class Attention(keras.layers.Layer):
                                   name='{}_Wx'.format(self.name),
                                   initializer=keras.initializers.get('glorot_normal'),
                                   regularizer=self.kernel_regularizer)
-        self.bh = self.add_weight(shape=(self.units,),
-                                  name='{}_bh'.format(self.name),
-                                  initializer=keras.initializers.get('zeros'),
-                                  regularizer=self.bias_regularizer)
+        weights = [self.Wt, self.Wx]
+        if self.use_relevance_bias:
+            self.bh = self.add_weight(shape=(self.units,),
+                                      name='{}_bh'.format(self.name),
+                                      initializer=keras.initializers.get('zeros'),
+                                      regularizer=self.bias_regularizer)
+            weights.append(self.bh)
 
         self.Wa = self.add_weight(shape=(self.units, 1),
                                   name='{}_Wa'.format(self.name),
                                   initializer=keras.initializers.get('glorot_normal'),
                                   regularizer=self.kernel_regularizer)
-        self.ba = self.add_weight(shape=(1,),
-                                  name='{}_ba'.format(self.name),
-                                  initializer=keras.initializers.get('zeros'),
-                                  regularizer=self.bias_regularizer)
+        weights.append(self.Wa)
+        if self.use_attention_bias:
+            self.ba = self.add_weight(shape=(1,),
+                                      name='{}_ba'.format(self.name),
+                                      initializer=keras.initializers.get('zeros'),
+                                      regularizer=self.bias_regularizer)
+            weights.append(self.ba)
 
-        self.trainable_weights = [self.Wx, self.Wt, self.bh, self.Wa, self.ba]
+        self.trainable_weights = weights
         super(Attention, self).build(input_shape)
 
     def call(self, inputs, mask=None, **kwargs):
         input_shape = K.shape(inputs)
         batch_size, input_len = input_shape[0], input_shape[1]
+
         # h_{t, t'} = \tanh(x_t^T W_t + x_{t'}^T W_x + b_h)
         q, k = K.dot(inputs, self.Wt), K.dot(inputs, self.Wx)
         q = Attention._tile(K.expand_dims(q, 2), K.stack([1, 1, input_len, 1]), ndim=4)
         k = Attention._tile(K.expand_dims(k, 1), K.stack([1, input_len, 1, 1]), ndim=4)
-        h = K.tanh(q + k + self.bh)
+        if self.use_relevance_bias:
+            h = K.tanh(q + k + self.bh)
+        else:
+            h = K.tanh(q + k)
+
         # e_{t, t'} = \sigma(W_a h_{t, t'} + b_a)
-        e = K.reshape(K.dot(h, self.Wa) + self.ba, (batch_size, input_len, input_len))
+        if self.use_attention_bias:
+            e = K.reshape(K.dot(h, self.Wa) + self.ba, (batch_size, input_len, input_len))
+        else:
+            e = K.reshape(K.dot(h, self.Wa), (batch_size, input_len, input_len))
         if self.attention_activation is not None:
             e = keras.activations.get(self.attention_activation)(e)
-        # a_{t} = \text{softmax}(e_t)
         e = K.exp(e)
         if self.attention_width is not None:
             if K.backend() == 'tensorflow':
@@ -93,9 +113,12 @@ class Attention(keras.layers.Layer):
             mask = K.cast(mask, K.floatx())
             mask = K.expand_dims(mask)
             e = K.permute_dimensions(K.permute_dimensions(e * mask, (0, 2, 1)) * mask, (0, 2, 1))
+
+        # a_{t} = \text{softmax}(e_t)
         s = K.sum(e, axis=-1)
         s = Attention._tile(K.expand_dims(s, axis=-1), K.stack([1, 1, input_len]), ndim=3)
         a = e / (s + K.epsilon())
+
         # l_t = \sum_{t'} a_{t, t'} x_{t'}
         inputs = K.permute_dimensions(inputs, (0, 2, 1))
         v = K.permute_dimensions(K.batch_dot(inputs, K.permute_dimensions(a, (0, 2, 1))), (0, 2, 1))

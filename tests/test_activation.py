@@ -5,7 +5,7 @@ import keras
 from keras_self_attention import Attention
 
 
-class TestAttentionActivation(unittest.TestCase):
+class TestActivation(unittest.TestCase):
 
     def test_attention_activation(self):
         sentences = [
