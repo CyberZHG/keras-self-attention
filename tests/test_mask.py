@@ -58,4 +58,3 @@ class TestMask(unittest.TestCase):
                         self.assertEqual(attention[i][j][k], 0.0)
                 if j < len(sentence):
                     self.assertTrue(abs(numpy.sum(attention[i][j]) - 1.0) < 1e-6)
-                    self.assertTrue(abs(numpy.sum(attention[i, :, j]) - 1.0) > 1e-6)

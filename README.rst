@@ -66,3 +66,23 @@ Usage
        metrics=['categorical_accuracy'],
    )
    model.summary()
+
+``attention_width``
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The global context may be too broad for one piece of data. The parameter ``attention_width`` controls the width of the local context.
+
+``attention_activation``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The activation function of ``e_{t, t'}``. There is no activation by default.
+
+.. code-block:: python
+
+   from keras_self_attention import Attention
+
+   Attention(
+       attention_width=15,
+       attention_activation='sigmoid',
+       name='Attention',
+   )
