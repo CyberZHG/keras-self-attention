@@ -10,6 +10,7 @@ class Attention(keras.layers.Layer):
                  return_attention=False,
                  kernel_regularizer=None,
                  bias_regularizer=None,
+                 attention_activation=None,
                  **kwargs):
         """Layer initialization.
 
@@ -18,6 +19,7 @@ class Attention(keras.layers.Layer):
         :param return_attention: Whether return the attention weights for visualization.
         :param kernel_regularization: The regularization for weight matrices.
         :param bias_regularization: The regularization for biases.
+        :param attention_activation: The activation used for calculating attention weights.
         :param kwargs: Parameters for parent class.
         """
         self.supports_masking = True
@@ -26,6 +28,7 @@ class Attention(keras.layers.Layer):
         self.return_attention = return_attention
 
         self.kernel_regularizer, self.bias_regularizer = kernel_regularizer, bias_regularizer
+        self.attention_activation = attention_activation
 
         self.Wx, self.Wt, self.bh = None, None, None
         self.Wa, self.ba = None, None
@@ -69,7 +72,9 @@ class Attention(keras.layers.Layer):
         k = Attention._tile(K.expand_dims(k, 1), K.stack([1, input_len, 1, 1]), ndim=4)
         h = K.tanh(q + k + self.bh)
         # e_{t, t'} = \sigma(W_a h_{t, t'} + b_a)
-        e = K.sigmoid(K.reshape(K.dot(h, self.Wa) + self.ba, (batch_size, input_len, input_len)))
+        e = K.reshape(K.dot(h, self.Wa) + self.ba, (batch_size, input_len, input_len))
+        if self.attention_activation is not None:
+            e = keras.activations.get(self.attention_activation)(e)
         # a_{t} = \text{softmax}(e_t)
         e = K.exp(e)
         if self.attention_width is not None:

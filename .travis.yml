@@ -10,12 +10,8 @@ before_install:
   - sudo apt-get install libopenblas-base libopenblas-dev -y
 install:
   - pip install --upgrade pip
-  - pip install numpy
-  - pip install tensorflow
-  - pip install theano
-  - pip install keras
-  - pip install pycodestyle
-  - pip install coverage
+  - pip install -r requirements.txt
+  - pip install -r requirements-dev.txt
   - pip install coveralls
   - pip install keras-self-attention
 before_script:
