@@ -1,6 +1,6 @@
 
-Keras Global Self-Attention
-===========================
+Keras Self-Attention
+====================
 
 
 .. image:: https://travis-ci.org/CyberZHG/keras-self-attention.svg
@@ -32,8 +32,8 @@ Attention mechanism for processing sequence data that considers the context for 
      :alt: 
 
 * 
-  .. image:: https://user-images.githubusercontent.com/853842/44248589-1d5aab00-a21e-11e8-9daa-f14578fb95d7.gif
-     :target: https://user-images.githubusercontent.com/853842/44248589-1d5aab00-a21e-11e8-9daa-f14578fb95d7.gif
+  .. image:: https://user-images.githubusercontent.com/853842/44249018-8ba06d00-a220-11e8-80e3-802677b658ed.gif
+     :target: https://user-images.githubusercontent.com/853842/44249018-8ba06d00-a220-11e8-80e3-802677b658ed.gif
      :alt: 
 
 Install
@@ -109,3 +109,62 @@ You can use multiplicative attention by setting ``attention_type``\ :
        use_attention_bias=False,
        name='Attention',
    )
+
+Regularizer
+^^^^^^^^^^^
+
+
+.. image:: https://user-images.githubusercontent.com/853842/44250188-f99b6300-a225-11e8-8fab-8dcf0d99616e.gif
+   :target: https://user-images.githubusercontent.com/853842/44250188-f99b6300-a225-11e8-8fab-8dcf0d99616e.gif
+   :alt: 
+
+
+To use the regularizer, the attention should be returned for calculating loss:
+
+.. code-block:: python
+
+   import keras
+   from keras_self_attention import Attention
+
+   inputs = keras.layers.Input(shape=(None,))
+   embd = keras.layers.Embedding(input_dim=32,
+                                 output_dim=16,
+                                 mask_zero=True)(inputs)
+   lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=16,
+                                                       return_sequences=True))(embd)
+   att, weights = Attention(return_attention=True,
+                            attention_width=5,
+                            attention_type=Attention.ATTENTION_TYPE_MUL,
+                            kernel_regularizer=keras.regularizers.l2(1e-4),
+                            bias_regularizer=keras.regularizers.l1(1e-4),
+                            name='Attention')(lstm)
+   dense = keras.layers.Dense(units=5, name='Dense')(att)
+   model = keras.models.Model(inputs=inputs, outputs=[dense, weights])
+   model.compile(
+       optimizer='adam',
+       loss={'Dense': 'sparse_categorical_crossentropy', 'Attention': Attention.loss(1e-2)},
+       metrics={'Dense': 'categorical_accuracy'},
+   )
+   model.summary(line_length=100)
+   model.fit(
+       x=x,
+       y=[
+           numpy.zeros((batch_size, sentence_len, 1)),
+           numpy.zeros((batch_size, sentence_len, sentence_len))
+       ],
+       epochs=10,
+   )
+
+Load the Model
+^^^^^^^^^^^^^^
+
+Make sure to add ``Attention`` to custom objects and add ``attention_regularizer`` as well if the regularizer has been used:
+
+.. code-block:: python
+
+   import keras
+
+   keras.models.load_model(model_path, custom_objects={
+       'Attention': Attention,
+       'attention_regularizer': Attention.loss(1e-2),
+   })

@@ -42,9 +42,9 @@ class Attention(keras.layers.Layer):
 
         self.use_relevance_bias = use_relevance_bias
         self.use_attention_bias = use_attention_bias
-        self.kernel_regularizer = kernel_regularizer
-        self.bias_regularizer = bias_regularizer
-        self.attention_activation = attention_activation
+        self.kernel_regularizer = keras.regularizers.get(kernel_regularizer)
+        self.bias_regularizer = keras.regularizers.get(bias_regularizer)
+        self.attention_activation = keras.activations.get(attention_activation)
         self._backend = keras.backend.backend()
 
         if attention_type == Attention.ATTENTION_TYPE_ADD:
@@ -56,6 +56,21 @@ class Attention(keras.layers.Layer):
             raise NotImplementedError('No implementation for attention type : ' + attention_type)
 
         super(Attention, self).__init__(**kwargs)
+
+    def get_config(self):
+        config = {
+            'units': self.units,
+            'attention_width': self.attention_width,
+            'attention_type': self.attention_type,
+            'return_attention': self.return_attention,
+            'use_relevance_bias': self.use_relevance_bias,
+            'use_attention_bias': self.use_attention_bias,
+            'kernel_regularizer': keras.regularizers.serialize(self.kernel_regularizer),
+            'bias_regularizer': keras.regularizers.serialize(self.bias_regularizer),
+            'attention_activation': keras.activations.serialize(self.attention_activation),
+        }
+        base_config = super(Attention, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
 
     def build(self, input_shape):
         if self.attention_type == Attention.ATTENTION_TYPE_ADD:
@@ -124,7 +139,7 @@ class Attention(keras.layers.Layer):
             e = self._call_multiplicative_emission(inputs)
 
         if self.attention_activation is not None:
-            e = keras.activations.get(self.attention_activation)(e)
+            e = self.attention_activation(e)
         e = K.exp(e)
         if self.attention_width is not None:
             if self._backend == Attention.BACKEND_TYPE_TENSORFLOW:
@@ -202,3 +217,19 @@ class Attention(keras.layers.Layer):
             import theano.tensor as T
             return T.tile(x, n, ndim=ndim)
         return K.tile(x, n)
+
+    @staticmethod
+    def loss(factor=1e-6):
+        def attention_regularizer(_, y_pred):
+            input_len = K.shape(y_pred)[-1]
+            if K.backend() == Attention.BACKEND_TYPE_TENSORFLOW:
+                import tensorflow as tf
+                return factor * K.square(K.batch_dot(y_pred, K.permute_dimensions(y_pred, (0, 2, 1)))
+                                         - tf.eye(input_len))
+            if K.backend() == Attention.BACKEND_TYPE_THEANO:
+                import theano.tensor as T
+                ones = T.ones((input_len, input_len))
+                eye = T.triu(ones, 0) * T.tril(ones, 0)
+                return factor * K.square(K.batch_dot(y_pred, K.permute_dimensions(y_pred, (0, 2, 1)))
+                                         - K.expand_dims(eye, 0))
+        return attention_regularizer

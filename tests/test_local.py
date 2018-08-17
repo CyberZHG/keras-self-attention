@@ -95,8 +95,6 @@ class TestLocal(unittest.TestCase):
         self.check_local_range(attention_type=Attention.ATTENTION_TYPE_ADD)
 
     def test_theano_mul(self):
-        import theano
-        theano.config.optimizer = 'None'
         TestLocal.set_keras_backend(Attention.BACKEND_TYPE_THEANO)
         self.check_local_range(attention_type=Attention.ATTENTION_TYPE_MUL)
 
