@@ -17,23 +17,23 @@ Attention mechanism for processing sequence data that considers the context for 
 
 
 * 
-  .. image:: https://camo.githubusercontent.com/1ef0269557ea05b96b6894de202a109f6947dca6/687474703a2f2f6c617465782e636f6465636f67732e636f6d2f6769662e6c617465783f685f253742742c2673706163653b74272537442673706163653b3d2673706163653b25354374616e6828785f74253545542673706163653b575f742673706163653b2b2673706163653b785f2537427427253744253545542673706163653b575f782673706163653b2b2673706163653b625f7429
-     :target: https://camo.githubusercontent.com/1ef0269557ea05b96b6894de202a109f6947dca6/687474703a2f2f6c617465782e636f6465636f67732e636f6d2f6769662e6c617465783f685f253742742c2673706163653b74272537442673706163653b3d2673706163653b25354374616e6828785f74253545542673706163653b575f742673706163653b2b2673706163653b785f2537427427253744253545542673706163653b575f782673706163653b2b2673706163653b625f7429
+  .. image:: https://user-images.githubusercontent.com/853842/44248592-1fbd0500-a21e-11e8-9fe0-52a1e4a48329.gif
+     :target: https://user-images.githubusercontent.com/853842/44248592-1fbd0500-a21e-11e8-9fe0-52a1e4a48329.gif
      :alt: 
 
 * 
-  .. image:: https://camo.githubusercontent.com/f8c64f2abd4752037c50deb7373b55362d7c51dc/687474703a2f2f6c617465782e636f6465636f67732e636f6d2f6769662e6c617465783f655f253742742c2673706163653b74272537442673706163653b3d2673706163653b2535437369676d6128575f612673706163653b685f253742742c2673706163653b74272537442673706163653b2b2673706163653b625f6129
-     :target: https://camo.githubusercontent.com/f8c64f2abd4752037c50deb7373b55362d7c51dc/687474703a2f2f6c617465782e636f6465636f67732e636f6d2f6769662e6c617465783f655f253742742c2673706163653b74272537442673706163653b3d2673706163653b2535437369676d6128575f612673706163653b685f253742742c2673706163653b74272537442673706163653b2b2673706163653b625f6129
+  .. image:: https://user-images.githubusercontent.com/853842/44248591-1e8bd800-a21e-11e8-9ca8-9198c2725108.gif
+     :target: https://user-images.githubusercontent.com/853842/44248591-1e8bd800-a21e-11e8-9ca8-9198c2725108.gif
      :alt: 
 
 * 
-  .. image:: https://camo.githubusercontent.com/c63a13424300fe05bee615ce051fece8b5bc1c9a/687474703a2f2f6c617465782e636f6465636f67732e636f6d2f6769662e6c617465783f615f253742742537442673706163653b3d2673706163653b25354374657874253742736f66746d617825374428655f7429
-     :target: https://camo.githubusercontent.com/c63a13424300fe05bee615ce051fece8b5bc1c9a/687474703a2f2f6c617465782e636f6465636f67732e636f6d2f6769662e6c617465783f615f253742742537442673706163653b3d2673706163653b25354374657874253742736f66746d617825374428655f7429
+  .. image:: https://user-images.githubusercontent.com/853842/44248590-1df34180-a21e-11e8-8ff1-268217f466ba.gif
+     :target: https://user-images.githubusercontent.com/853842/44248590-1df34180-a21e-11e8-8ff1-268217f466ba.gif
      :alt: 
 
 * 
-  .. image:: https://camo.githubusercontent.com/b9999104eccdcc594abbbef429a3fa49bac27d78/687474703a2f2f6c617465782e636f6465636f67732e636f6d2f6769662e6c617465783f6c5f742673706163653b3d2673706163653b25354373756d5f25374274272537442673706163653b615f253742742c2673706163653b74272537442673706163653b785f2537427427253744
-     :target: https://camo.githubusercontent.com/b9999104eccdcc594abbbef429a3fa49bac27d78/687474703a2f2f6c617465782e636f6465636f67732e636f6d2f6769662e6c617465783f6c5f742673706163653b3d2673706163653b25354373756d5f25374274272537442673706163653b615f253742742c2673706163653b74272537442673706163653b785f2537427427253744
+  .. image:: https://user-images.githubusercontent.com/853842/44248589-1d5aab00-a21e-11e8-9daa-f14578fb95d7.gif
+     :target: https://user-images.githubusercontent.com/853842/44248589-1d5aab00-a21e-11e8-9daa-f14578fb95d7.gif
      :alt: 
 
 Install
@@ -45,6 +45,11 @@ Install
 
 Usage
 -----
+
+Basic
+^^^^^
+
+By default, the attention layer uses additive attention and considers the whole context while calculating the relevance. The following code creates an attention layer that follows the equations in the first section (\ ``attention_activation`` is the activation function of ``e_{t, t'}``\ ):
 
 .. code-block:: python
 
@@ -58,7 +63,7 @@ Usage
                                     mask_zero=True))
    model.add(keras.layers.Bidirectional(keras.layers.LSTM(units=128,
                                                           return_sequences=True)))
-   model.add(Attention())
+   model.add(Attention(attention_activation='sigmoid'))
    model.add(keras.layers.Dense(units=5))
    model.compile(
        optimizer='adam',
@@ -67,15 +72,10 @@ Usage
    )
    model.summary()
 
-``attention_width``
-^^^^^^^^^^^^^^^^^^^^^^^
+Local Attention
+^^^^^^^^^^^^^^^
 
-The global context may be too broad for one piece of data. The parameter ``attention_width`` controls the width of the local context.
-
-``attention_activation``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The activation function of ``e_{t, t'}``. There is no activation by default.
+The global context may be too broad for one piece of data. The parameter ``attention_width`` controls the width of the local context:
 
 .. code-block:: python
 
@@ -84,5 +84,28 @@ The activation function of ``e_{t, t'}``. There is no activation by default.
    Attention(
        attention_width=15,
        attention_activation='sigmoid',
+       name='Attention',
+   )
+
+Multiplicative Attention
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can use multiplicative attention by setting ``attention_type``\ :
+
+
+.. image:: https://user-images.githubusercontent.com/853842/44248897-c229b800-a21f-11e8-9b05-62ca384ed220.gif
+   :target: https://user-images.githubusercontent.com/853842/44248897-c229b800-a21f-11e8-9b05-62ca384ed220.gif
+   :alt: 
+
+
+.. code-block:: python
+
+   from keras_self_attention import Attention
+
+   Attention(
+       attention_width=15,
+       attention_type=Attention.ATTENTION_TYPE_MUL,
+       kernel_regularizer=keras.regularizers.l2(1e-6),
+       use_attention_bias=False,
        name='Attention',
    )
