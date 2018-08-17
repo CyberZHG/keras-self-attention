@@ -6,8 +6,6 @@ import numpy
 import keras
 import keras.backend as K
 from keras_self_attention import Attention
-if sys.version_info[0] >= 3:
-    import importlib
 
 
 class TestLoss(unittest.TestCase):
@@ -78,6 +76,7 @@ class TestLoss(unittest.TestCase):
             ],
             epochs=10,
         )
+        self.assertTrue(model is not None)
 
     def test_tensorflow_loss(self):
         TestLoss.set_keras_backend(Attention.BACKEND_TYPE_TENSORFLOW)

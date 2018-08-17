@@ -27,6 +27,7 @@ class TestSaveLoad(unittest.TestCase):
         model.save(model_path)
         model = keras.models.load_model(model_path, custom_objects={'Attention': Attention})
         model.summary()
+        self.assertTrue(model is not None)
 
     def test_save_load_with_loss(self):
         inputs = keras.layers.Input(shape=(None,))
@@ -57,3 +58,4 @@ class TestSaveLoad(unittest.TestCase):
             'attention_regularizer': Attention.loss(1e-2),
         })
         model.summary()
+        self.assertTrue(model is not None)

@@ -6,8 +6,6 @@ import numpy
 import keras
 import keras.backend as K
 from keras_self_attention import Attention
-if sys.version_info[0] >= 3:
-    import importlib
 
 
 class TestLocal(unittest.TestCase):

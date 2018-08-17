@@ -84,29 +84,29 @@ class Attention(keras.layers.Layer):
         feature_dim = input_shape[2]
 
         self.Wt = self.add_weight(shape=(feature_dim, self.units),
-                                  name='{}_Wt'.format(self.name),
+                                  name='{}_Add_Wt'.format(self.name),
                                   initializer=keras.initializers.get('glorot_normal'),
                                   regularizer=self.kernel_regularizer)
         self.Wx = self.add_weight(shape=(feature_dim, self.units),
-                                  name='{}_Wx'.format(self.name),
+                                  name='{}_Add_Wx'.format(self.name),
                                   initializer=keras.initializers.get('glorot_normal'),
                                   regularizer=self.kernel_regularizer)
         weights = [self.Wt, self.Wx]
         if self.use_additive_bias:
             self.bh = self.add_weight(shape=(self.units,),
-                                      name='{}_bh'.format(self.name),
+                                      name='{}_Add_bh'.format(self.name),
                                       initializer=keras.initializers.get('zeros'),
                                       regularizer=self.bias_regularizer)
             weights.append(self.bh)
 
         self.Wa = self.add_weight(shape=(self.units, 1),
-                                  name='{}_Wa'.format(self.name),
+                                  name='{}_Add_Wa'.format(self.name),
                                   initializer=keras.initializers.get('glorot_normal'),
                                   regularizer=self.kernel_regularizer)
         weights.append(self.Wa)
         if self.use_attention_bias:
             self.ba = self.add_weight(shape=(1,),
-                                      name='{}_ba'.format(self.name),
+                                      name='{}_Add_ba'.format(self.name),
                                       initializer=keras.initializers.get('zeros'),
                                       regularizer=self.bias_regularizer)
             weights.append(self.ba)
@@ -117,13 +117,13 @@ class Attention(keras.layers.Layer):
         feature_dim = input_shape[2]
 
         self.Wa = self.add_weight(shape=(feature_dim, feature_dim),
-                                  name='{}_Wa'.format(self.name),
+                                  name='{}_Mul_Wa'.format(self.name),
                                   initializer=keras.initializers.get('glorot_normal'),
                                   regularizer=self.kernel_regularizer)
         weights = [self.Wa]
         if self.use_attention_bias:
             self.ba = self.add_weight(shape=(1,),
-                                      name='{}_ba'.format(self.name),
+                                      name='{}_Mul_ba'.format(self.name),
                                       initializer=keras.initializers.get('zeros'),
                                       regularizer=self.bias_regularizer)
             weights.append(self.ba)
@@ -131,8 +131,7 @@ class Attention(keras.layers.Layer):
         self.trainable_weights = weights
 
     def call(self, inputs, mask=None, **kwargs):
-        input_shape = K.shape(inputs)
-        batch_size, input_len = input_shape[0], input_shape[1]
+        input_len = K.shape(inputs)[1]
 
         if self.attention_type == Attention.ATTENTION_TYPE_ADD:
             e = self._call_additive_emission(inputs)
