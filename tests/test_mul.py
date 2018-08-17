@@ -1,34 +1,13 @@
-import os
-import sys
 import unittest
 import random
 import numpy
 import keras
-import keras.backend as K
 from keras_self_attention import Attention
-if sys.version_info[0] >= 3:
-    import importlib
 
 
-class TestLocal(unittest.TestCase):
+class TestMul(unittest.TestCase):
 
-    def setUp(self):
-        self.backend = K.backend()
-
-    def tearDown(self):
-        TestLocal.set_keras_backend(self.backend)
-
-    @staticmethod
-    def set_keras_backend(backend):
-        if K.backend() != backend:
-            os.environ['KERAS_BACKEND'] = backend
-            if sys.version_info[0] >= 3:
-                import importlib
-                importlib.reload(K)
-            else:
-                reload(K)
-
-    def check_local_range(self, attention_type):
+    def test_multiplicative(self):
         sentences = [
             ['All', 'work', 'and', 'no', 'play'],
             ['makes', 'Jack', 'a', 'dull', 'boy', '.'],
@@ -57,8 +36,8 @@ class TestLocal(unittest.TestCase):
         lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=16,
                                                             return_sequences=True))(embd)
         att, weights = Attention(return_attention=True,
-                                 attention_width=5,
-                                 attention_type=attention_type,
+                                 attention_width=15,
+                                 attention_type=Attention.ATTENTION_TYPE_MUL,
                                  kernel_regularizer=keras.regularizers.l2(1e-4),
                                  bias_regularizer=keras.regularizers.l1(1e-4))(lstm)
         dense = keras.layers.Dense(units=5)(att)
@@ -75,46 +54,14 @@ class TestLocal(unittest.TestCase):
         for i, sentence in enumerate(sentences):
             for j in range(sentence_len):
                 for k in range(sentence_len):
-                    if j < len(sentence) and k < len(sentence) and abs(j - k) <= 2:
+                    if j < len(sentence) and k < len(sentence):
                         self.assertGreater(attention[i][j][k], 0.0)
                     else:
                         self.assertEqual(attention[i][j][k], 0.0)
                 if j < len(sentence):
                     self.assertTrue(abs(numpy.sum(attention[i][j]) - 1.0) < 1e-6)
 
-    def test_tensorflow_add(self):
-        TestLocal.set_keras_backend(Attention.BACKEND_TYPE_TENSORFLOW)
-        self.check_local_range(attention_type=Attention.ATTENTION_TYPE_ADD)
-
-    def test_tensorflow_mul(self):
-        TestLocal.set_keras_backend(Attention.BACKEND_TYPE_TENSORFLOW)
-        self.check_local_range(attention_type=Attention.ATTENTION_TYPE_MUL)
-
-    def test_theano_add(self):
-        TestLocal.set_keras_backend(Attention.BACKEND_TYPE_THEANO)
-        self.check_local_range(attention_type=Attention.ATTENTION_TYPE_ADD)
-
-    def test_theano_mul(self):
-        import theano
-        theano.config.optimizer = 'None'
-        TestLocal.set_keras_backend(Attention.BACKEND_TYPE_THEANO)
-        self.check_local_range(attention_type=Attention.ATTENTION_TYPE_MUL)
-
     def test_not_implemented(self):
         with self.assertRaises(NotImplementedError):
-            inputs = keras.layers.Input(shape=(None,))
-            embd = keras.layers.Embedding(input_dim=30,
-                                          output_dim=16,
-                                          mask_zero=True)(inputs)
-            lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=16,
-                                                                return_sequences=True))(embd)
-            att = Attention(attention_width=15)
-            att._backend = 'random'
-            att = att(lstm)
-            dense = keras.layers.Dense(units=5)(att)
-            model = keras.models.Model(inputs=inputs, outputs=dense)
-            model.compile(
-                optimizer='adam',
-                loss='categorical_crossentropy',
-                metrics=['categorical_accuracy'],
-            )
+            Attention(return_attention=True,
+                      attention_type='random')
