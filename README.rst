@@ -93,8 +93,8 @@ Multiplicative Attention
 You can use multiplicative attention by setting ``attention_type``\ :
 
 
-.. image:: https://user-images.githubusercontent.com/853842/44248897-c229b800-a21f-11e8-9b05-62ca384ed220.gif
-   :target: https://user-images.githubusercontent.com/853842/44248897-c229b800-a21f-11e8-9b05-62ca384ed220.gif
+.. image:: https://user-images.githubusercontent.com/853842/44253887-a03a3080-a233-11e8-9d49-3fd7e622a0f7.gif
+   :target: https://user-images.githubusercontent.com/853842/44253887-a03a3080-a233-11e8-9d49-3fd7e622a0f7.gif
    :alt: 
 
 
@@ -105,6 +105,7 @@ You can use multiplicative attention by setting ``attention_type``\ :
    Attention(
        attention_width=15,
        attention_type=Attention.ATTENTION_TYPE_MUL,
+       attention_activation=None,
        kernel_regularizer=keras.regularizers.l2(1e-6),
        use_attention_bias=False,
        name='Attention',

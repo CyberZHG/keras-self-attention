@@ -39,7 +39,7 @@ class TestBias(unittest.TestCase):
                                  attention_width=3,
                                  kernel_regularizer=keras.regularizers.l2(1e-4),
                                  bias_regularizer=keras.regularizers.l1(1e-4),
-                                 use_relevance_bias=False,
+                                 use_additive_bias=False,
                                  use_attention_bias=False,
                                  attention_activation='relu')(lstm)
         dense = keras.layers.Dense(units=5)(att)

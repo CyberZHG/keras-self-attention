@@ -17,20 +17,21 @@ class Attention(keras.layers.Layer):
                  return_attention=False,
                  kernel_regularizer=None,
                  bias_regularizer=None,
-                 use_relevance_bias=True,
+                 use_additive_bias=True,
                  use_attention_bias=True,
                  attention_activation=None,
                  **kwargs):
         """Layer initialization.
 
-        :param units: Dimension of the vectors that used to calculate the attention weights.
+        :param units: The dimension of the vectors that used to calculate the attention weights.
         :param attention_width: The width of local attention.
         :param attention_type: 'additive' or 'multiplicative'.
-        :param return_attention: Whether return the attention weights for visualization.
+        :param return_attention: Whether to return the attention weights for regularization or visualization.
         :param kernel_regularization: The regularization for weight matrices.
         :param bias_regularization: The regularization for biases.
-        :param use_relevance_bias: Whether using bias while calculating the relevance of inputs features.
-        :param use_attention_bias: Whether using bias while calculating the weights of attention.
+        :param use_additive_bias: Whether to use bias while calculating the relevance of inputs features
+                                  in additive mode.
+        :param use_attention_bias: Whether to use bias while calculating the weights of attention.
         :param attention_activation: The activation used for calculating the weights of attention.
         :param kwargs: Parameters for parent class.
         """
@@ -40,7 +41,7 @@ class Attention(keras.layers.Layer):
         self.attention_type = attention_type
         self.return_attention = return_attention
 
-        self.use_relevance_bias = use_relevance_bias
+        self.use_additive_bias = use_additive_bias
         self.use_attention_bias = use_attention_bias
         self.kernel_regularizer = keras.regularizers.get(kernel_regularizer)
         self.bias_regularizer = keras.regularizers.get(bias_regularizer)
@@ -63,7 +64,7 @@ class Attention(keras.layers.Layer):
             'attention_width': self.attention_width,
             'attention_type': self.attention_type,
             'return_attention': self.return_attention,
-            'use_relevance_bias': self.use_relevance_bias,
+            'use_additive_bias': self.use_additive_bias,
             'use_attention_bias': self.use_attention_bias,
             'kernel_regularizer': keras.regularizers.serialize(self.kernel_regularizer),
             'bias_regularizer': keras.regularizers.serialize(self.bias_regularizer),
@@ -91,7 +92,7 @@ class Attention(keras.layers.Layer):
                                   initializer=keras.initializers.get('glorot_normal'),
                                   regularizer=self.kernel_regularizer)
         weights = [self.Wt, self.Wx]
-        if self.use_relevance_bias:
+        if self.use_additive_bias:
             self.bh = self.add_weight(shape=(self.units,),
                                       name='{}_bh'.format(self.name),
                                       initializer=keras.initializers.get('zeros'),
@@ -178,7 +179,7 @@ class Attention(keras.layers.Layer):
         q, k = K.dot(inputs, self.Wt), K.dot(inputs, self.Wx)
         q = self._tile(K.expand_dims(q, 2), K.stack([1, 1, input_len, 1]), ndim=4)
         k = self._tile(K.expand_dims(k, 1), K.stack([1, input_len, 1, 1]), ndim=4)
-        if self.use_relevance_bias:
+        if self.use_additive_bias:
             h = K.tanh(q + k + self.bh)
         else:
             h = K.tanh(q + k)

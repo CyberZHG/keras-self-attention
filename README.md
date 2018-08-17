@@ -62,7 +62,7 @@ Attention(
 
 You can use multiplicative attention by setting `attention_type`:
 
-![](https://user-images.githubusercontent.com/853842/44248897-c229b800-a21f-11e8-9b05-62ca384ed220.gif)
+![](https://user-images.githubusercontent.com/853842/44253887-a03a3080-a233-11e8-9d49-3fd7e622a0f7.gif)
 
 ```python
 from keras_self_attention import Attention
@@ -70,6 +70,7 @@ from keras_self_attention import Attention
 Attention(
     attention_width=15,
     attention_type=Attention.ATTENTION_TYPE_MUL,
+    attention_activation=None,
     kernel_regularizer=keras.regularizers.l2(1e-6),
     use_attention_bias=False,
     name='Attention',
