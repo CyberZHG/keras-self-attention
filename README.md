@@ -2,7 +2,7 @@
 
 [![Travis](https://travis-ci.org/CyberZHG/keras-self-attention.svg)](https://travis-ci.org/CyberZHG/keras-self-attention)
 [![Coverage](https://coveralls.io/repos/github/CyberZHG/keras-self-attention/badge.svg?branch=master)](https://coveralls.io/github/CyberZHG/keras-self-attention)
-![PyPI](https://img.shields.io/pypi/pyversions/keras-self-attention.svg)
+[![PyPI](https://img.shields.io/pypi/pyversions/keras-self-attention.svg)](https://pypi.org/project/keras-self-attention/)
 
 
 Attention mechanism for processing sequence data that considers the context for each timestamp.

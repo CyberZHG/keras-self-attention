@@ -13,6 +13,11 @@ Keras Self-Attention
    :alt: Coverage
 
 
+.. image:: https://img.shields.io/pypi/pyversions/keras-self-attention.svg
+   :target: https://pypi.org/project/keras-self-attention/
+   :alt: PyPI
+
+
 Attention mechanism for processing sequence data that considers the context for each timestamp.
 
 

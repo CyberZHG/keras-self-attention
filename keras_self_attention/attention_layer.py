@@ -91,27 +91,21 @@ class Attention(keras.layers.Layer):
                                   name='{}_Add_Wx'.format(self.name),
                                   initializer=keras.initializers.get('glorot_normal'),
                                   regularizer=self.kernel_regularizer)
-        weights = [self.Wt, self.Wx]
         if self.use_additive_bias:
             self.bh = self.add_weight(shape=(self.units,),
                                       name='{}_Add_bh'.format(self.name),
                                       initializer=keras.initializers.get('zeros'),
                                       regularizer=self.bias_regularizer)
-            weights.append(self.bh)
 
         self.Wa = self.add_weight(shape=(self.units, 1),
                                   name='{}_Add_Wa'.format(self.name),
                                   initializer=keras.initializers.get('glorot_normal'),
                                   regularizer=self.kernel_regularizer)
-        weights.append(self.Wa)
         if self.use_attention_bias:
             self.ba = self.add_weight(shape=(1,),
                                       name='{}_Add_ba'.format(self.name),
                                       initializer=keras.initializers.get('zeros'),
                                       regularizer=self.bias_regularizer)
-            weights.append(self.ba)
-
-        self.trainable_weights = weights
 
     def _build_multiplicative_attention(self, input_shape):
         feature_dim = input_shape[2]
@@ -120,15 +114,11 @@ class Attention(keras.layers.Layer):
                                   name='{}_Mul_Wa'.format(self.name),
                                   initializer=keras.initializers.get('glorot_normal'),
                                   regularizer=self.kernel_regularizer)
-        weights = [self.Wa]
         if self.use_attention_bias:
             self.ba = self.add_weight(shape=(1,),
                                       name='{}_Mul_ba'.format(self.name),
                                       initializer=keras.initializers.get('zeros'),
                                       regularizer=self.bias_regularizer)
-            weights.append(self.ba)
-
-        self.trainable_weights = weights
 
     def call(self, inputs, mask=None, **kwargs):
         input_len = K.shape(inputs)[1]
