@@ -121,6 +121,9 @@ class Attention(keras.layers.Layer):
                                       regularizer=self.bias_regularizer)
 
     def call(self, inputs, mask=None, **kwargs):
+        if self._backend not in {Attention.BACKEND_TYPE_TENSORFLOW, Attention.BACKEND_TYPE_THEANO}:
+            raise NotImplementedError('No implementation for backend : ' + K.backend())
+
         input_len = K.shape(inputs)[1]
 
         if self.attention_type == Attention.ATTENTION_TYPE_ADD:
@@ -140,8 +143,6 @@ class Attention(keras.layers.Layer):
                 import theano.tensor as T
                 ones = T.ones((input_len, input_len))
                 local = T.triu(ones, -(self.attention_width // 2)) * T.tril(ones, (self.attention_width - 1) // 2)
-            else:
-                raise NotImplementedError('No implementation for backend : ' + K.backend())
             e = e * K.expand_dims(local, 0)
         if mask is not None:
             mask = K.cast(mask, K.floatx())

@@ -1,16 +1,23 @@
 language: python
 env:
-  matrix:
-    - BLAS_LIB=OpenBLAS
+  - KERAS_BACKEND=tensorflow COVERALLS_PARALLEL=true
+  - KERAS_BACKEND=theano BLAS_LIB=OpenBLAS COVERALLS_PARALLEL=true
 python:
-  - "2.7"
-  - "3.6"
+  - 2.7
+  - 3.6
+notifications:
+  webhooks: https://coveralls.io/webhook?repo_token=7FQ9zM7VQZvpYxk6BGy29uS5cVJCl6PFp
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install libopenblas-base libopenblas-dev -y
+  - if [[ "$KERAS_BACKEND" == "theano" ]]; then
+      sudo apt-get update && sudo apt-get install libopenblas-base libopenblas-dev -y;
+    fi
 install:
   - pip install --upgrade pip
-  - pip install -r requirements.txt
+  - if [[ "$KERAS_BACKEND" == "theano" ]]; then
+      pip install -r requirements-theano.txt;
+    else
+      pip install -r requirements.txt;
+    fi
   - pip install -r requirements-dev.txt
   - pip install coveralls
   - pip install keras-self-attention

@@ -1,32 +1,13 @@
-import os
-import sys
 import unittest
 import random
 import numpy
 import keras
-import keras.backend as K
 from keras_self_attention import Attention
 
 
 class TestLoss(unittest.TestCase):
 
-    def setUp(self):
-        self.backend = K.backend()
-
-    def tearDown(self):
-        TestLoss.set_keras_backend(self.backend)
-
-    @staticmethod
-    def set_keras_backend(backend):
-        if K.backend() != backend:
-            os.environ['KERAS_BACKEND'] = backend
-            if sys.version_info[0] >= 3:
-                import importlib
-                importlib.reload(K)
-            else:
-                reload(K)
-
-    def check_loss(self):
+    def test_loss(self):
         sentences = [
             ['All', 'work', 'and', 'no', 'play'],
             ['makes', 'Jack', 'a', 'dull', 'boy', '.'],
@@ -77,11 +58,3 @@ class TestLoss(unittest.TestCase):
             epochs=10,
         )
         self.assertTrue(model is not None)
-
-    def test_tensorflow_loss(self):
-        TestLoss.set_keras_backend(Attention.BACKEND_TYPE_TENSORFLOW)
-        self.check_loss()
-
-    def test_theano_loss(self):
-        TestLoss.set_keras_backend(Attention.BACKEND_TYPE_THEANO)
-        self.check_loss()

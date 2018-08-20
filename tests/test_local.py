@@ -1,30 +1,11 @@
-import os
-import sys
 import unittest
 import random
 import numpy
 import keras
-import keras.backend as K
 from keras_self_attention import Attention
 
 
 class TestLocal(unittest.TestCase):
-
-    def setUp(self):
-        self.backend = K.backend()
-
-    def tearDown(self):
-        TestLocal.set_keras_backend(self.backend)
-
-    @staticmethod
-    def set_keras_backend(backend):
-        if K.backend() != backend:
-            os.environ['KERAS_BACKEND'] = backend
-            if sys.version_info[0] >= 3:
-                import importlib
-                importlib.reload(K)
-            else:
-                reload(K)
 
     def check_local_range(self, attention_type):
         sentences = [
@@ -80,20 +61,10 @@ class TestLocal(unittest.TestCase):
                 if j < len(sentence):
                     self.assertTrue(abs(numpy.sum(attention[i][j]) - 1.0) < 1e-6)
 
-    def test_tensorflow_add(self):
-        TestLocal.set_keras_backend(Attention.BACKEND_TYPE_TENSORFLOW)
+    def test_add(self):
         self.check_local_range(attention_type=Attention.ATTENTION_TYPE_ADD)
 
-    def test_tensorflow_mul(self):
-        TestLocal.set_keras_backend(Attention.BACKEND_TYPE_TENSORFLOW)
-        self.check_local_range(attention_type=Attention.ATTENTION_TYPE_MUL)
-
-    def test_theano_add(self):
-        TestLocal.set_keras_backend(Attention.BACKEND_TYPE_THEANO)
-        self.check_local_range(attention_type=Attention.ATTENTION_TYPE_ADD)
-
-    def test_theano_mul(self):
-        TestLocal.set_keras_backend(Attention.BACKEND_TYPE_THEANO)
+    def test_mul(self):
         self.check_local_range(attention_type=Attention.ATTENTION_TYPE_MUL)
 
     def test_not_implemented(self):
