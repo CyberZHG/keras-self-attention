@@ -1,12 +1,12 @@
 language: python
 env:
-  - KERAS_BACKEND=tensorflow COVERALLS_PARALLEL=true
-  - KERAS_BACKEND=theano BLAS_LIB=OpenBLAS COVERALLS_PARALLEL=true
+  - KERAS_BACKEND=tensorflow
+  - KERAS_BACKEND=theano BLAS_LIB=OpenBLAS
 python:
   - 2.7
   - 3.6
 notifications:
-  webhooks: https://coveralls.io/webhook?repo_token=7FQ9zM7VQZvpYxk6BGy29uS5cVJCl6PFp
+  webhooks: https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN
 before_install:
   - if [[ "$KERAS_BACKEND" == "theano" ]]; then
       sudo apt-get update && sudo apt-get install libopenblas-base libopenblas-dev -y;
