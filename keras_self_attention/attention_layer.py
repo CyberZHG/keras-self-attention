@@ -20,19 +20,21 @@ class Attention(keras.layers.Layer):
                  use_additive_bias=True,
                  use_attention_bias=True,
                  attention_activation=None,
+                 attention_regularizer_weight=0.0,
                  **kwargs):
         """Layer initialization.
 
         :param units: The dimension of the vectors that used to calculate the attention weights.
         :param attention_width: The width of local attention.
         :param attention_type: 'additive' or 'multiplicative'.
-        :param return_attention: Whether to return the attention weights for regularization or visualization.
+        :param return_attention: Whether to return the attention weights for visualization.
         :param kernel_regularization: The regularization for weight matrices.
         :param bias_regularization: The regularization for biases.
         :param use_additive_bias: Whether to use bias while calculating the relevance of inputs features
                                   in additive mode.
         :param use_attention_bias: Whether to use bias while calculating the weights of attention.
         :param attention_activation: The activation used for calculating the weights of attention.
+        :param attention_regularizer_weight: The weights of attention regularizer.
         :param kwargs: Parameters for parent class.
         """
         self.supports_masking = True
@@ -46,6 +48,7 @@ class Attention(keras.layers.Layer):
         self.kernel_regularizer = keras.regularizers.get(kernel_regularizer)
         self.bias_regularizer = keras.regularizers.get(bias_regularizer)
         self.attention_activation = keras.activations.get(attention_activation)
+        self.attention_regularizer_weight = attention_regularizer_weight
         self._backend = keras.backend.backend()
 
         if attention_type == Attention.ATTENTION_TYPE_ADD:
@@ -69,6 +72,7 @@ class Attention(keras.layers.Layer):
             'kernel_regularizer': keras.regularizers.serialize(self.kernel_regularizer),
             'bias_regularizer': keras.regularizers.serialize(self.bias_regularizer),
             'attention_activation': keras.activations.serialize(self.attention_activation),
+            'attention_regularizer_weight': self.attention_regularizer_weight,
         }
         base_config = super(Attention, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
@@ -157,6 +161,8 @@ class Attention(keras.layers.Layer):
         # l_t = \sum_{t'} a_{t, t'} x_{t'}
         inputs = K.permute_dimensions(inputs, (0, 2, 1))
         v = K.permute_dimensions(K.batch_dot(inputs, K.permute_dimensions(a, (0, 2, 1))), (0, 2, 1))
+        if self.attention_regularizer_weight > 0.0:
+            self.add_loss(self._attention_regularizer(a))
         if self.return_attention:
             return [v, a]
         return v
@@ -209,18 +215,18 @@ class Attention(keras.layers.Layer):
             return T.tile(x, n, ndim=ndim)
         return K.tile(x, n)
 
-    @staticmethod
-    def loss(factor=1e-6):
-        def attention_regularizer(_, y_pred):
-            input_len = K.shape(y_pred)[-1]
-            if K.backend() == Attention.BACKEND_TYPE_TENSORFLOW:
-                import tensorflow as tf
-                return factor * K.square(K.batch_dot(y_pred, K.permute_dimensions(y_pred, (0, 2, 1)))
-                                         - tf.eye(input_len))
-            if K.backend() == Attention.BACKEND_TYPE_THEANO:
-                import theano.tensor as T
-                ones = T.ones((input_len, input_len))
-                eye = T.triu(ones, 0) * T.tril(ones, 0)
-                return factor * K.square(K.batch_dot(y_pred, K.permute_dimensions(y_pred, (0, 2, 1)))
-                                         - K.expand_dims(eye, 0))
-        return attention_regularizer
+    def _attention_regularizer(self, attention):
+        batch_size = K.cast(K.shape(attention)[0], K.floatx())
+        input_len = K.shape(attention)[-1]
+        if K.backend() == Attention.BACKEND_TYPE_TENSORFLOW:
+            import tensorflow as tf
+            return self.attention_regularizer_weight * K.sum(K.square(K.batch_dot(
+                attention,
+                K.permute_dimensions(attention, (0, 2, 1))) - tf.eye(input_len))) / batch_size
+        if K.backend() == Attention.BACKEND_TYPE_THEANO:
+            import theano.tensor as T
+            ones = T.ones((input_len, input_len))
+            eye = T.triu(ones, 0) * T.tril(ones, 0)
+            return self.attention_regularizer_weight * K.sum(K.square(K.batch_dot(
+                attention,
+                K.permute_dimensions(attention, (0, 2, 1))) - K.expand_dims(eye, 0))) / batch_size

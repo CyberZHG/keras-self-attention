@@ -32,7 +32,7 @@ class TestMaskShape(unittest.TestCase):
         return sentences, numpy.asarray(input_data), token_dict
 
     @staticmethod
-    def get_model(attention, token_dict, attention_loss=False):
+    def get_model(attention, token_dict, return_attention=False):
         inputs = keras.layers.Input(shape=(None,), name='Input')
         embd = keras.layers.Embedding(input_dim=len(token_dict),
                                       output_dim=16,
@@ -50,12 +50,9 @@ class TestMaskShape(unittest.TestCase):
             model = keras.models.Model(inputs=inputs, outputs=[dense, weights])
         else:
             model = keras.models.Model(inputs=inputs, outputs=dense)
-        loss = {'Dense': 'sparse_categorical_crossentropy'}
-        if attention_loss:
-            loss['Attention'] = Attention.loss(1e-2)
         model.compile(
             optimizer='adam',
-            loss=loss,
+            loss={'Dense': 'sparse_categorical_crossentropy'},
             metrics={'Dense': 'categorical_accuracy'},
         )
         model.summary(line_length=100)

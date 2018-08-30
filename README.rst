@@ -18,6 +18,11 @@ Keras Self-Attention
    :alt: PyPI
 
 
+.. image:: https://api.codacy.com/project/badge/Grade/5a99d0419bec42cfb73c4af06d746c8a
+   :target: https://www.codacy.com/project/CyberZHG/keras-self-attention/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CyberZHG/keras-self-attention&amp;utm_campaign=Badge_Grade_Dashboard
+   :alt: Codacy Badge
+
+
 Attention mechanism for processing sequence data that considers the context for each timestamp.
 
 
@@ -125,7 +130,7 @@ Regularizer
    :alt: 
 
 
-To use the regularizer, the attention should be returned for calculating loss:
+To use the regularizer, set ``attention_regularizer_weight`` to a positive number:
 
 .. code-block:: python
 
@@ -138,33 +143,29 @@ To use the regularizer, the attention should be returned for calculating loss:
                                  mask_zero=True)(inputs)
    lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=16,
                                                        return_sequences=True))(embd)
-   att, weights = Attention(return_attention=True,
-                            attention_width=5,
-                            attention_type=Attention.ATTENTION_TYPE_MUL,
+   att, weights = Attention(attention_type=Attention.ATTENTION_TYPE_MUL,
                             kernel_regularizer=keras.regularizers.l2(1e-4),
                             bias_regularizer=keras.regularizers.l1(1e-4),
+                            attention_regularizer_weight=1e-4,
                             name='Attention')(lstm)
    dense = keras.layers.Dense(units=5, name='Dense')(att)
    model = keras.models.Model(inputs=inputs, outputs=[dense, weights])
    model.compile(
        optimizer='adam',
-       loss={'Dense': 'sparse_categorical_crossentropy', 'Attention': Attention.loss(1e-2)},
+       loss={'Dense': 'sparse_categorical_crossentropy'},
        metrics={'Dense': 'categorical_accuracy'},
    )
    model.summary(line_length=100)
    model.fit(
        x=x,
-       y=[
-           numpy.zeros((batch_size, sentence_len, 1)),
-           numpy.zeros((batch_size, sentence_len, sentence_len))
-       ],
+       y=numpy.zeros((batch_size, sentence_len, 1)),,
        epochs=10,
    )
 
 Load the Model
 ^^^^^^^^^^^^^^
 
-Make sure to add ``Attention`` to custom objects and add ``attention_regularizer`` as well if the regularizer has been used:
+Make sure to add ``Attention`` to custom objects:
 
 .. code-block:: python
 
@@ -172,5 +173,4 @@ Make sure to add ``Attention`` to custom objects and add ``attention_regularizer
 
    keras.models.load_model(model_path, custom_objects={
        'Attention': Attention,
-       'attention_regularizer': Attention.loss(1e-2),
    })
