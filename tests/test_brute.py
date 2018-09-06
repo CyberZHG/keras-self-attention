@@ -14,7 +14,6 @@ class SelfAttentionBrute(keras.engine.Layer):
         :param kwargs: Parameters for parent class.
         """
         self.units = units
-        self.supports_masking = True
         self.Wt, self.Wx, self.bh = None, None, None
         self.Wa, self.ba = None, None
         super(SelfAttentionBrute, self).__init__(** kwargs)
@@ -41,7 +40,7 @@ class SelfAttentionBrute(keras.engine.Layer):
         super(SelfAttentionBrute, self).build(input_shape)
 
     def call(self, x, mask=None):
-        v = K.map_fn(lambda s: self.calc_sample(s), x)
+        v = K.map_fn(self.calc_sample, x)
         if mask is not None:
             mask = K.cast(mask, K.floatx())
             v = v * mask
@@ -59,19 +58,11 @@ class SelfAttentionBrute(keras.engine.Layer):
         v = K.sum(K.transpose(h) * K.reshape(a, (time_len,)), axis=1)
         return v
 
-    def get_output_shape_for(self, input_shape):
-        return self.compute_output_shape(input_shape)
-
-    def compute_output_shape(self, input_shape):
-        return input_shape
-
-    def compute_mask(self, _, input_mask=None):
-        return input_mask
-
 
 class TestBrute(unittest.TestCase):
 
-    def _reset_seed(self, seed):
+    @staticmethod
+    def _reset_seed(seed):
         random.seed(seed)
         numpy.random.seed(seed)
         if keras.backend.backend() == SelfAttention.BACKEND_TYPE_TENSORFLOW:
