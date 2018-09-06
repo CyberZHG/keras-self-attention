@@ -23,7 +23,7 @@ Keras Self-Attention
    :alt: Codacy Badge
 
 
-Attention mechanism for processing sequence data that considers the context for each timestamp.
+Attention mechanism for processing sequential data that considers the context for each timestamp.
 
 
 * 
@@ -64,7 +64,7 @@ By default, the attention layer uses additive attention and considers the whole 
 .. code-block:: python
 
    import keras
-   from keras_self_attention import Attention
+   from keras_self_attention import SelfAttention
 
 
    model = keras.models.Sequential()
@@ -73,7 +73,7 @@ By default, the attention layer uses additive attention and considers the whole 
                                     mask_zero=True))
    model.add(keras.layers.Bidirectional(keras.layers.LSTM(units=128,
                                                           return_sequences=True)))
-   model.add(Attention(attention_activation='sigmoid'))
+   model.add(SelfAttention(attention_activation='sigmoid'))
    model.add(keras.layers.Dense(units=5))
    model.compile(
        optimizer='adam',
@@ -89,9 +89,9 @@ The global context may be too broad for one piece of data. The parameter ``atten
 
 .. code-block:: python
 
-   from keras_self_attention import Attention
+   from keras_self_attention import SelfAttention
 
-   Attention(
+   SelfAttention(
        attention_width=15,
        attention_activation='sigmoid',
        name='Attention',
@@ -110,9 +110,9 @@ You can use multiplicative attention by setting ``attention_type``\ :
 
 .. code-block:: python
 
-   from keras_self_attention import Attention
+   from keras_self_attention import SelfAttention
 
-   Attention(
+   SelfAttention(
        attention_width=15,
        attention_type=Attention.ATTENTION_TYPE_MUL,
        attention_activation=None,
@@ -135,7 +135,7 @@ To use the regularizer, set ``attention_regularizer_weight`` to a positive numbe
 .. code-block:: python
 
    import keras
-   from keras_self_attention import Attention
+   from keras_self_attention import SelfAttention
 
    inputs = keras.layers.Input(shape=(None,))
    embd = keras.layers.Embedding(input_dim=32,
@@ -143,11 +143,11 @@ To use the regularizer, set ``attention_regularizer_weight`` to a positive numbe
                                  mask_zero=True)(inputs)
    lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=16,
                                                        return_sequences=True))(embd)
-   att, weights = Attention(attention_type=Attention.ATTENTION_TYPE_MUL,
-                            kernel_regularizer=keras.regularizers.l2(1e-4),
-                            bias_regularizer=keras.regularizers.l1(1e-4),
-                            attention_regularizer_weight=1e-4,
-                            name='Attention')(lstm)
+   att, weights = SelfAttention(attention_type=Attention.ATTENTION_TYPE_MUL,
+                                kernel_regularizer=keras.regularizers.l2(1e-4),
+                                bias_regularizer=keras.regularizers.l1(1e-4),
+                                attention_regularizer_weight=1e-4,
+                                name='Attention')(lstm)
    dense = keras.layers.Dense(units=5, name='Dense')(att)
    model = keras.models.Model(inputs=inputs, outputs=[dense, weights])
    model.compile(
@@ -165,12 +165,12 @@ To use the regularizer, set ``attention_regularizer_weight`` to a positive numbe
 Load the Model
 ^^^^^^^^^^^^^^
 
-Make sure to add ``Attention`` to custom objects:
+Make sure to add ``SelfAttention`` to custom objects:
 
 .. code-block:: python
 
    import keras
 
    keras.models.load_model(model_path, custom_objects={
-       'Attention': Attention,
+       'SelfAttention': SelfAttention,
    })

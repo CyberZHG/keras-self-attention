@@ -5,7 +5,7 @@
 [![PyPI](https://img.shields.io/pypi/pyversions/keras-self-attention.svg)](https://pypi.org/project/keras-self-attention/)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5a99d0419bec42cfb73c4af06d746c8a)](https://www.codacy.com/project/CyberZHG/keras-self-attention/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=CyberZHG/keras-self-attention&amp;utm_campaign=Badge_Grade_Dashboard)
 
-Attention mechanism for processing sequence data that considers the context for each timestamp.
+Attention mechanism for processing sequential data that considers the context for each timestamp.
 
 * ![](https://user-images.githubusercontent.com/853842/44248592-1fbd0500-a21e-11e8-9fe0-52a1e4a48329.gif)
 * ![](https://user-images.githubusercontent.com/853842/44248591-1e8bd800-a21e-11e8-9ca8-9198c2725108.gif)

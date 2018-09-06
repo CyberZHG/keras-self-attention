@@ -8,7 +8,7 @@ setup(
     license='MIT',
     author='CyberZHG',
     author_email='CyberZHG@gmail.com',
-    description='Attention mechanism for processing sequence data that considers the context for each timestamp',
+    description='Attention mechanism for processing sequential data that considers the context for each timestamp',
     long_description=open('README.rst', 'r').read(),
     install_requires=[
         'numpy',
