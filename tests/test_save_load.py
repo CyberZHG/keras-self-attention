@@ -26,7 +26,7 @@ class TestSaveLoad(TestMaskShape):
                                   attention_regularizer_weight=1e-3,
                                   name='Attention')
         _, _, token_dict = self.get_input_data()
-        model = self.get_model(attention, token_dict, return_attention=True)
+        model = self.get_model(attention, token_dict)
         model_path = os.path.join(tempfile.gettempdir(), 'keras_self_att_test_sl_with_loss_%f.h5' % random.random())
         model.save(model_path)
         model = keras.models.load_model(model_path, custom_objects={'SelfAttention': SelfAttention})

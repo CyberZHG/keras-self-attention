@@ -14,7 +14,7 @@ class TestLoss(TestMaskShape):
                                   attention_regularizer_weight=1e-4,
                                   name='Attention')
         sentences, input_data, token_dict = self.get_input_data()
-        model = self.get_model(attention, token_dict, return_attention=True)
+        model = self.get_model(attention, token_dict)
         sentence_len = input_data.shape[1]
         model.fit(
             x=input_data,

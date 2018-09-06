@@ -2,7 +2,6 @@ import unittest
 import random
 import numpy
 import keras
-from keras_self_attention import SelfAttention
 
 
 class TestMaskShape(unittest.TestCase):
@@ -32,7 +31,7 @@ class TestMaskShape(unittest.TestCase):
         return sentences, numpy.asarray(input_data), token_dict
 
     @staticmethod
-    def get_model(attention, token_dict, return_attention=False):
+    def get_model(attention, token_dict):
         inputs = keras.layers.Input(shape=(None,), name='Input')
         embd = keras.layers.Embedding(input_dim=len(token_dict),
                                       output_dim=16,
