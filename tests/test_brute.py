@@ -3,7 +3,7 @@ import keras
 import keras.backend as K
 import numpy
 import unittest
-from keras_self_attention import SelfAttention
+from keras_self_attention import SeqSelfAttention
 
 
 class SelfAttentionBrute(keras.engine.Layer):
@@ -65,7 +65,7 @@ class TestBrute(unittest.TestCase):
     def _reset_seed(seed):
         random.seed(seed)
         numpy.random.seed(seed)
-        if keras.backend.backend() == SelfAttention.BACKEND_TYPE_TENSORFLOW:
+        if keras.backend.backend() == SeqSelfAttention.BACKEND_TYPE_TENSORFLOW:
             import tensorflow as tf
             tf.set_random_seed(seed)
 
@@ -76,7 +76,7 @@ class TestBrute(unittest.TestCase):
         seed = random.randint(0, 1000)
         self._reset_seed(seed)
         inp = keras.layers.Input((sentence_len, feature_dim))
-        att = SelfAttention(units=units, kernel_initializer='glorot_normal', bias_initializer='zeros')
+        att = SeqSelfAttention(units=units, kernel_initializer='glorot_normal', bias_initializer='zeros')
         out = att(inp)
         model = keras.models.Model(inp, out)
         predict_1 = model.predict(test_x)

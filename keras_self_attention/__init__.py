@@ -1,1 +1,1 @@
-from .attention_layer import SelfAttention
+from .attention_layer import SeqSelfAttention
