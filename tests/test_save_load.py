@@ -13,7 +13,7 @@ class TestSaveLoad(TestMaskShape):
         model = self.get_model(SeqSelfAttention(name='Attention'), token_dict)
         model_path = os.path.join(tempfile.gettempdir(), 'keras_self_att_test_save_load_%f.h5' % random.random())
         model.save(model_path)
-        model = keras.models.load_model(model_path, custom_objects={'SelfAttention': SeqSelfAttention})
+        model = keras.models.load_model(model_path, custom_objects={'SeqSelfAttention': SeqSelfAttention})
         model.summary()
         self.assertTrue(model is not None)
 
@@ -29,6 +29,6 @@ class TestSaveLoad(TestMaskShape):
         model = self.get_model(attention, token_dict)
         model_path = os.path.join(tempfile.gettempdir(), 'keras_self_att_test_sl_with_loss_%f.h5' % random.random())
         model.save(model_path)
-        model = keras.models.load_model(model_path, custom_objects={'SelfAttention': SeqSelfAttention})
+        model = keras.models.load_model(model_path, custom_objects=SeqSelfAttention.get_custom_objects())
         model.summary()
         self.assertTrue(model is not None)

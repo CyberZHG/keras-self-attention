@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='keras-self-attention',
-    version='0.22',
+    version='0.23',
     packages=['keras_self_attention'],
     url='https://github.com/CyberZHG/keras-self-attention',
     license='MIT',

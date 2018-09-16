@@ -253,3 +253,7 @@ class SeqSelfAttention(keras.layers.Layer):
             return self.attention_regularizer_weight * K.sum(K.square(K.batch_dot(
                 attention,
                 K.permute_dimensions(attention, (0, 2, 1))) - K.expand_dims(eye, 0))) / batch_size
+
+    @staticmethod
+    def get_custom_objects():
+        return {'SeqSelfAttention': SeqSelfAttention}

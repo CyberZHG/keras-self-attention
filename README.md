@@ -121,7 +121,5 @@ Make sure to add `SeqSelfAttention` to custom objects:
 ```python
 import keras
 
-keras.models.load_model(model_path, custom_objects={
-    'SeqSelfAttention': SeqSelfAttention,
-})
+keras.models.load_model(model_path, custom_objects=SeqSelfAttention.get_custom_objects())
 ```
