@@ -126,8 +126,9 @@ keras.models.load_model(model_path, custom_objects=SeqSelfAttention.get_custom_o
 
 ### Select Positions
 
-When the number of inputs is 2, the second input is considered as positions:
+When there are multiple inputs, the second input is considered as positions:
 
 ```python
+positions = keras.layers.Input(shape=(pos_num,), name='Input-Pos')
 SeqSelfAttention(name='Attention')([lstm, positions])
 ```
