@@ -12,21 +12,15 @@ class TestPos(TestMaskShape):
         input_data = keras.layers.Input(shape=(None,), name='Input-Data')
         input_pos = keras.layers.Input(shape=(pos_num,), name='Input-Pos')
         embd = keras.layers.Embedding(input_dim=len(token_dict),
-                                      output_dim=16,
+                                      output_dim=32,
                                       mask_zero=True,
                                       name='Embedding')(input_data)
         lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=16,
                                                             return_sequences=True),
                                           name='Bi-LSTM')(embd)
-        if attention.return_attention:
-            att, weights = attention([lstm, input_pos])
-        else:
-            att = attention([lstm, input_pos])
+        att, weights = attention([lstm, input_pos])
         dense = keras.layers.Dense(units=5, name='Dense')(att)
-        if attention.return_attention:
-            model = keras.models.Model(inputs=[input_data, input_pos], outputs=[dense, weights])
-        else:
-            model = keras.models.Model(inputs=[input_data, input_pos], outputs=dense)
+        model = keras.models.Model(inputs=[input_data, input_pos], outputs=[dense, weights])
         model.compile(
             optimizer='adam',
             loss={'Dense': 'sparse_categorical_crossentropy'},

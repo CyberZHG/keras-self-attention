@@ -52,7 +52,7 @@ class TestMaskShape(unittest.TestCase):
         model.compile(
             optimizer='adam',
             loss={'Dense': 'sparse_categorical_crossentropy'},
-            metrics={'Dense': 'sparse_categorical_accuracy'},
+            metrics={'Dense': 'sparse_categorical_crossentropy'},
         )
         model.summary(line_length=100)
         return model
