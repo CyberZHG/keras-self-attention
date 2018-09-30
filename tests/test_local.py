@@ -19,22 +19,3 @@ class TestLocal(TestMaskShape):
 
     def test_mul(self):
         self.check_local_range(attention_type=SeqSelfAttention.ATTENTION_TYPE_MUL)
-
-    def test_not_implemented(self):
-        with self.assertRaises(NotImplementedError):
-            inputs = keras.layers.Input(shape=(None,))
-            embd = keras.layers.Embedding(input_dim=40,
-                                          output_dim=18,
-                                          mask_zero=True)(inputs)
-            lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=18,
-                                                                return_sequences=True))(embd)
-            att = SeqSelfAttention(attention_width=15)
-            att._backend = 'random'
-            att = att(lstm)
-            dense = keras.layers.Dense(units=5)(att)
-            model = keras.models.Model(inputs=inputs, outputs=dense)
-            model.compile(
-                optimizer='adam',
-                loss='categorical_crossentropy',
-                metrics=['categorical_accuracy'],
-            )
