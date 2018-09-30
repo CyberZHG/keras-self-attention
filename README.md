@@ -95,10 +95,10 @@ embd = keras.layers.Embedding(input_dim=32,
 lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=16,
                                                     return_sequences=True))(embd)
 att, weights = SeqSelfAttention(attention_type=Attention.ATTENTION_TYPE_MUL,
-                             kernel_regularizer=keras.regularizers.l2(1e-4),
-                             bias_regularizer=keras.regularizers.l1(1e-4),
-                             attention_regularizer_weight=1e-4,
-                             name='Attention')(lstm)
+                                kernel_regularizer=keras.regularizers.l2(1e-4),
+                                bias_regularizer=keras.regularizers.l1(1e-4),
+                                attention_regularizer_weight=1e-4,
+                                name='Attention')(lstm)
 dense = keras.layers.Dense(units=5, name='Dense')(att)
 model = keras.models.Model(inputs=inputs, outputs=[dense, weights])
 model.compile(
@@ -122,4 +122,12 @@ Make sure to add `SeqSelfAttention` to custom objects:
 import keras
 
 keras.models.load_model(model_path, custom_objects=SeqSelfAttention.get_custom_objects())
+```
+
+### Select Positions
+
+When the number of inputs is 2, the second input is considered as positions:
+
+```python
+SeqSelfAttention(name='Attention')([lstm, positions])
 ```

@@ -1,6 +1,4 @@
 language: python
-env:
-  - KERAS_BACKEND=tensorflow
 python:
   - 2.7
   - 3.6
