@@ -2,6 +2,7 @@ import random
 import keras
 import keras.backend as K
 import numpy
+import tensorflow as tf
 import unittest
 from keras_self_attention import SeqSelfAttention
 
@@ -65,9 +66,7 @@ class TestBrute(unittest.TestCase):
     def _reset_seed(seed):
         random.seed(seed)
         numpy.random.seed(seed)
-        if keras.backend.backend() == SeqSelfAttention.BACKEND_TYPE_TENSORFLOW:
-            import tensorflow as tf
-            tf.set_random_seed(seed)
+        tf.set_random_seed(seed)
 
     def test_same_as_brute(self):
         batch_size, sentence_len, feature_dim, units = 2, 3, 5, 7

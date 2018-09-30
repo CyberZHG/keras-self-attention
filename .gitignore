@@ -108,3 +108,6 @@ venv.bak/
 
 # IDE
 .idea
+
+# Temporary README
+README.rst

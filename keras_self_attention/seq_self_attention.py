@@ -1,14 +1,12 @@
 import keras
 import keras.backend as K
+import tensorflow as tf
 
 
 class SeqSelfAttention(keras.layers.Layer):
 
     ATTENTION_TYPE_ADD = 'additive'
     ATTENTION_TYPE_MUL = 'multiplicative'
-
-    BACKEND_TYPE_TENSORFLOW = 'tensorflow'
-    BACKEND_TYPE_THEANO = 'theano'
 
     def __init__(self,
                  units=32,
@@ -94,6 +92,8 @@ class SeqSelfAttention(keras.layers.Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
     def build(self, input_shape):
+        if isinstance(input_shape, list):
+            input_shape = input_shape[0]
         if self.attention_type == SeqSelfAttention.ATTENTION_TYPE_ADD:
             self._build_additive_attention(input_shape)
         elif self.attention_type == SeqSelfAttention.ATTENTION_TYPE_MUL:
@@ -148,8 +148,12 @@ class SeqSelfAttention(keras.layers.Layer):
                                       constraint=self.bias_constraint)
 
     def call(self, inputs, mask=None, **kwargs):
-        if self._backend not in {SeqSelfAttention.BACKEND_TYPE_TENSORFLOW, SeqSelfAttention.BACKEND_TYPE_THEANO}:
-            raise NotImplementedError('No implementation for backend : ' + K.backend())
+        if isinstance(inputs, list):
+            inputs, positions = inputs
+            positions = K.cast(positions, 'int32')
+            mask = mask[1]
+        else:
+            positions = None
 
         input_len = K.shape(inputs)[1]
 
@@ -162,14 +166,8 @@ class SeqSelfAttention(keras.layers.Layer):
             e = self.attention_activation(e)
         e = K.exp(e)
         if self.attention_width is not None:
-            if self._backend == SeqSelfAttention.BACKEND_TYPE_TENSORFLOW:
-                import tensorflow as tf
-                ones = tf.ones((input_len, input_len))
-                local = tf.matrix_band_part(ones, self.attention_width // 2, (self.attention_width - 1) // 2)
-            elif self._backend == SeqSelfAttention.BACKEND_TYPE_THEANO:
-                import theano.tensor as T
-                ones = T.ones((input_len, input_len))
-                local = T.triu(ones, -(self.attention_width // 2)) * T.tril(ones, (self.attention_width - 1) // 2)
+            ones = tf.ones((input_len, input_len))
+            local = tf.matrix_band_part(ones, self.attention_width // 2, (self.attention_width - 1) // 2)
             e = e * K.expand_dims(local, 0)
         if mask is not None:
             mask = K.cast(mask, K.floatx())
@@ -178,7 +176,7 @@ class SeqSelfAttention(keras.layers.Layer):
 
         # a_{t} = \text{softmax}(e_t)
         s = K.sum(e, axis=-1)
-        s = self._tile(K.expand_dims(s, axis=-1), K.stack([1, 1, input_len]), ndim=3)
+        s = K.tile(K.expand_dims(s, axis=-1), K.stack([1, 1, input_len]))
         a = e / (s + K.epsilon())
 
         # l_t = \sum_{t'} a_{t, t'} x_{t'}
@@ -186,6 +184,14 @@ class SeqSelfAttention(keras.layers.Layer):
         v = K.permute_dimensions(K.batch_dot(inputs, K.permute_dimensions(a, (0, 2, 1))), (0, 2, 1))
         if self.attention_regularizer_weight > 0.0:
             self.add_loss(self._attention_regularizer(a))
+
+        if positions is not None:
+            pos_num = K.shape(positions)[1]
+            batch_indices = K.tile(K.expand_dims(K.arange(K.shape(inputs)[0]), axis=-1), K.stack([1, pos_num]))
+            pos_indices = K.stack([batch_indices, positions], axis=-1)
+            v = tf.gather_nd(v, pos_indices)
+            a = tf.gather_nd(a, pos_indices)
+
         if self.return_attention:
             return [v, a]
         return v
@@ -196,8 +202,8 @@ class SeqSelfAttention(keras.layers.Layer):
 
         # h_{t, t'} = \tanh(x_t^T W_t + x_{t'}^T W_x + b_h)
         q, k = K.dot(inputs, self.Wt), K.dot(inputs, self.Wx)
-        q = self._tile(K.expand_dims(q, 2), K.stack([1, 1, input_len, 1]), ndim=4)
-        k = self._tile(K.expand_dims(k, 1), K.stack([1, input_len, 1, 1]), ndim=4)
+        q = K.tile(K.expand_dims(q, 2), K.stack([1, 1, input_len, 1]))
+        k = K.tile(K.expand_dims(k, 1), K.stack([1, input_len, 1, 1]))
         if self.use_additive_bias:
             h = K.tanh(q + k + self.bh)
         else:
@@ -211,48 +217,36 @@ class SeqSelfAttention(keras.layers.Layer):
         return e
 
     def _call_multiplicative_emission(self, inputs):
-        input_len = K.shape(inputs)[1]
-
         # e_{t, t'} = x_t^T W_a x_{t'} + b_a
         e = K.batch_dot(K.dot(inputs, self.Wa), K.permute_dimensions(inputs, (0, 2, 1)))
         if self.use_attention_bias:
-            if self._backend == SeqSelfAttention.BACKEND_TYPE_THEANO:
-                e = K.bias_add(e, K.reshape(K.repeat(K.expand_dims(self.ba, 0), input_len), (input_len,)))
-            else:
-                e = e + self.ba
+            e = e + self.ba
         return e
 
     def compute_output_shape(self, input_shape):
+        if isinstance(input_shape, list):
+            input_shape, pos_shape = input_shape
+            output_shape = (input_shape[0], pos_shape[1], input_shape[2])
+        else:
+            output_shape = input_shape
         if self.return_attention:
-            return [input_shape, (input_shape[0], input_shape[1], input_shape[1])]
-        return input_shape
+            attention_shape = (input_shape[0], output_shape[1], input_shape[1])
+            return [output_shape, attention_shape]
+        return output_shape
 
     def compute_mask(self, inputs, mask=None):
+        if isinstance(inputs, list):
+            mask = mask[1]
         if self.return_attention:
             return [mask, None]
         return mask
 
-    def _tile(self, x, n, ndim=None):
-        if self._backend == SeqSelfAttention.BACKEND_TYPE_THEANO:
-            import theano.tensor as T
-            return T.tile(x, n, ndim=ndim)
-        return K.tile(x, n)
-
     def _attention_regularizer(self, attention):
         batch_size = K.cast(K.shape(attention)[0], K.floatx())
         input_len = K.shape(attention)[-1]
-        if K.backend() == SeqSelfAttention.BACKEND_TYPE_TENSORFLOW:
-            import tensorflow as tf
-            return self.attention_regularizer_weight * K.sum(K.square(K.batch_dot(
-                attention,
-                K.permute_dimensions(attention, (0, 2, 1))) - tf.eye(input_len))) / batch_size
-        if K.backend() == SeqSelfAttention.BACKEND_TYPE_THEANO:
-            import theano.tensor as T
-            ones = T.ones((input_len, input_len))
-            eye = T.triu(ones, 0) * T.tril(ones, 0)
-            return self.attention_regularizer_weight * K.sum(K.square(K.batch_dot(
-                attention,
-                K.permute_dimensions(attention, (0, 2, 1))) - K.expand_dims(eye, 0))) / batch_size
+        return self.attention_regularizer_weight * K.sum(K.square(K.batch_dot(
+            attention,
+            K.permute_dimensions(attention, (0, 2, 1))) - tf.eye(input_len))) / batch_size
 
     @staticmethod
     def get_custom_objects():
