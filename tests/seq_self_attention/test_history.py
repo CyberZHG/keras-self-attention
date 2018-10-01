@@ -12,3 +12,9 @@ class TestHistory(TestMaskShape):
                                      history_only=True,
                                      name='Attention')
         self.check_mask_shape(attention)
+
+    def test_infinite_history(self):
+        attention = SeqSelfAttention(return_attention=True,
+                                     history_only=True,
+                                     name='Attention')
+        self.check_mask_shape(attention)

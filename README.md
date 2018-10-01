@@ -132,3 +132,16 @@ When there are multiple inputs, the second input is considered as positions:
 positions = keras.layers.Input(shape=(pos_num,), name='Input-Pos')
 SeqSelfAttention(name='Attention')([lstm, positions])
 ```
+
+### History Only
+
+Set `history_only` to `True` when only historical data could be used:
+
+```python
+positions = keras.layers.Input(shape=(pos_num,), name='Input-Pos')
+SeqSelfAttention(attention_width=3, history_only=True, name='Attention')([lstm, positions])
+```
+
+### Multi-Head
+
+Please refer to [keras-multi-head](https://github.com/CyberZHG/keras-multi-head).

@@ -51,6 +51,8 @@ class SeqSelfAttention(keras.layers.Layer):
         self.attention_type = attention_type
         self.return_attention = return_attention
         self.history_only = history_only
+        if history_only and attention_width is None:
+            self.attention_width = int(1e10)
 
         self.use_additive_bias = use_additive_bias
         self.use_attention_bias = use_attention_bias
@@ -172,9 +174,17 @@ class SeqSelfAttention(keras.layers.Layer):
         if self.attention_width is not None:
             ones = tf.ones((input_len, input_len))
             if self.history_only:
-                local = tf.matrix_band_part(ones, self.attention_width - 1, 0)
+                local = tf.matrix_band_part(
+                    ones,
+                    K.minimum(input_len, self.attention_width - 1),
+                    0,
+                )
             else:
-                local = tf.matrix_band_part(ones, self.attention_width // 2, (self.attention_width - 1) // 2)
+                local = tf.matrix_band_part(
+                    ones,
+                    K.minimum(input_len, self.attention_width // 2),
+                    K.minimum(input_len, (self.attention_width - 1) // 2),
+                )
             e = e * K.expand_dims(local, 0)
         if mask is not None:
             mask = K.cast(mask, K.floatx())
