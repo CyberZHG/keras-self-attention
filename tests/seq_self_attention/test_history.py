@@ -1,0 +1,14 @@
+import keras
+import numpy as np
+from keras_self_attention import SeqSelfAttention
+from .util import TestMaskShape
+
+
+class TestHistory(TestMaskShape):
+
+    def test_history(self):
+        attention = SeqSelfAttention(return_attention=True,
+                                     attention_width=3,
+                                     history_only=True,
+                                     name='Attention')
+        self.check_mask_shape(attention)

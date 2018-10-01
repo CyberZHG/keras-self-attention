@@ -13,6 +13,7 @@ class SeqSelfAttention(keras.layers.Layer):
                  attention_width=None,
                  attention_type=ATTENTION_TYPE_ADD,
                  return_attention=False,
+                 history_only=False,
                  kernel_initializer='glorot_normal',
                  bias_initializer='zeros',
                  kernel_regularizer=None,
@@ -30,6 +31,7 @@ class SeqSelfAttention(keras.layers.Layer):
         :param attention_width: The width of local attention.
         :param attention_type: 'additive' or 'multiplicative'.
         :param return_attention: Whether to return the attention weights for visualization.
+        :param history_only: Only use historical pieces of data.
         :param kernel_initializer: The initializer for weight matrices.
         :param bias_initializer: The initializer for biases.
         :param kernel_regularizer: The regularization for weight matrices.
@@ -48,6 +50,7 @@ class SeqSelfAttention(keras.layers.Layer):
         self.attention_width = attention_width
         self.attention_type = attention_type
         self.return_attention = return_attention
+        self.history_only = history_only
 
         self.use_additive_bias = use_additive_bias
         self.use_attention_bias = use_attention_bias
@@ -77,6 +80,7 @@ class SeqSelfAttention(keras.layers.Layer):
             'attention_width': self.attention_width,
             'attention_type': self.attention_type,
             'return_attention': self.return_attention,
+            'history_only': self.history_only,
             'use_additive_bias': self.use_additive_bias,
             'use_attention_bias': self.use_attention_bias,
             'kernel_initializer': keras.regularizers.serialize(self.kernel_initializer),
@@ -167,7 +171,10 @@ class SeqSelfAttention(keras.layers.Layer):
         e = K.exp(e)
         if self.attention_width is not None:
             ones = tf.ones((input_len, input_len))
-            local = tf.matrix_band_part(ones, self.attention_width // 2, (self.attention_width - 1) // 2)
+            if self.history_only:
+                local = tf.matrix_band_part(ones, self.attention_width - 1, 0)
+            else:
+                local = tf.matrix_band_part(ones, self.attention_width // 2, (self.attention_width - 1) // 2)
             e = e * K.expand_dims(local, 0)
         if mask is not None:
             mask = K.cast(mask, K.floatx())
