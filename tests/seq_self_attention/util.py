@@ -64,15 +64,21 @@ class TestMaskShape(unittest.TestCase):
         if attention.attention_width is None:
             attention_width = 1e9
         else:
-            attention_width = attention.attention_width // 2
-        attention = outputs[1]
+            attention_width = attention.attention_width
+        history_only = attention.history_only
+        attention_output = outputs[1]
         sentence_len = input_data.shape[1]
         for i, sentence in enumerate(sentences):
             for j in range(sentence_len):
                 for k in range(sentence_len):
-                    if j < len(sentence) and k < len(sentence) and abs(j - k) <= attention_width:
-                        self.assertGreater(attention[i][j][k], 0.0)
+                    if j < len(sentence) and k < len(sentence):
+                        if history_only and 0 <= j - k < attention_width:
+                            self.assertGreater(attention_output[i][j][k], 0.0)
+                        elif not history_only and abs(j - k) <= attention_width // 2:
+                            self.assertGreater(attention_output[i][j][k], 0.0)
+                        else:
+                            self.assertEqual(attention_output[i][j][k], 0.0, (history_only, i, j, k))
                     else:
-                        self.assertEqual(attention[i][j][k], 0.0)
+                        self.assertEqual(attention_output[i][j][k], 0.0, (i, j, k))
                 if j < len(sentence):
-                    self.assertTrue(abs(numpy.sum(attention[i][j]) - 1.0) < 1e-6)
+                    self.assertTrue(abs(numpy.sum(attention_output[i][j]) - 1.0) < 1e-6)
