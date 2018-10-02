@@ -23,7 +23,10 @@ class TestPos(TestMaskShape):
         model = keras.models.Model(inputs=[input_data, input_pos], outputs=[dense, weights])
         model.compile(
             optimizer='adam',
-            loss={'Dense': 'sparse_categorical_crossentropy'},
+            loss={
+                'Dense': 'sparse_categorical_crossentropy',
+                'Attention': 'mse',
+            },
             metrics={'Dense': 'sparse_categorical_accuracy'},
         )
         model.summary(line_length=120)

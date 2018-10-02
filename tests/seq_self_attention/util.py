@@ -45,13 +45,15 @@ class TestMaskShape(unittest.TestCase):
         else:
             att = attention(lstm)
         dense = keras.layers.Dense(units=5, name='Dense')(att)
+        loss = {'Dense': 'sparse_categorical_crossentropy'}
         if attention.return_attention:
             model = keras.models.Model(inputs=inputs, outputs=[dense, weights])
+            loss[attention.name] = 'mse'
         else:
             model = keras.models.Model(inputs=inputs, outputs=dense)
         model.compile(
             optimizer='adam',
-            loss={'Dense': 'sparse_categorical_crossentropy'},
+            loss=loss,
             metrics={'Dense': 'sparse_categorical_crossentropy'},
         )
         model.summary(line_length=100)

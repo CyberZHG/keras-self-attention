@@ -170,7 +170,7 @@ class SeqSelfAttention(keras.layers.Layer):
 
         if self.attention_activation is not None:
             e = self.attention_activation(e)
-        e = K.exp(e)
+        e = K.exp(e - K.max(e, axis=-1, keepdims=True))
         if self.attention_width is not None:
             ones = tf.ones((input_len, input_len))
             if self.history_only:
@@ -197,8 +197,7 @@ class SeqSelfAttention(keras.layers.Layer):
         a = e / (s + K.epsilon())
 
         # l_t = \sum_{t'} a_{t, t'} x_{t'}
-        inputs = K.permute_dimensions(inputs, (0, 2, 1))
-        v = K.permute_dimensions(K.batch_dot(inputs, K.permute_dimensions(a, (0, 2, 1))), (0, 2, 1))
+        v = K.batch_dot(a, inputs)
         if self.attention_regularizer_weight > 0.0:
             self.add_loss(self._attention_regularizer(a))
 

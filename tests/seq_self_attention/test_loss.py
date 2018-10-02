@@ -7,7 +7,7 @@ from .util import TestMaskShape
 class TestLoss(TestMaskShape):
 
     def test_loss(self):
-        attention = SeqSelfAttention(return_attention=True,
+        attention = SeqSelfAttention(return_attention=False,
                                      attention_type=SeqSelfAttention.ATTENTION_TYPE_MUL,
                                      kernel_regularizer=keras.regularizers.l2(1e-6),
                                      bias_regularizer=keras.regularizers.l1(1e-6),

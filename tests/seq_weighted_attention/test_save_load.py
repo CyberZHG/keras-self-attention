@@ -22,14 +22,16 @@ class TestSaveLoad(unittest.TestCase):
         else:
             layer = attention(lstm)
         dense = keras.layers.Dense(units=2, activation='softmax', name='Softmax')(layer)
+        loss = {'Softmax': 'sparse_categorical_crossentropy'}
         if attention.return_attention:
             outputs = [dense, weights]
+            loss[attention.name] = 'mse'
         else:
             outputs = dense
         model = keras.models.Model(inputs=inputs, outputs=outputs)
         model.compile(
             optimizer='adam',
-            loss={'Softmax': 'sparse_categorical_crossentropy'},
+            loss=loss,
             metrics={'Softmax': 'sparse_categorical_accuracy'},
         )
         model_path = os.path.join(tempfile.gettempdir(), 'keras_weighted_att_test_sl_%f.h5' % random.random())
