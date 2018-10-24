@@ -70,7 +70,7 @@ from keras_self_attention import SeqSelfAttention
 
 SeqSelfAttention(
     attention_width=15,
-    attention_type=Attention.ATTENTION_TYPE_MUL,
+    attention_type=SeqSelfAttention.ATTENTION_TYPE_MUL,
     attention_activation=None,
     kernel_regularizer=keras.regularizers.l2(1e-6),
     use_attention_bias=False,
@@ -94,24 +94,19 @@ embd = keras.layers.Embedding(input_dim=32,
                               mask_zero=True)(inputs)
 lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=16,
                                                     return_sequences=True))(embd)
-att, weights = SeqSelfAttention(attention_type=Attention.ATTENTION_TYPE_MUL,
-                                kernel_regularizer=keras.regularizers.l2(1e-4),
-                                bias_regularizer=keras.regularizers.l1(1e-4),
-                                attention_regularizer_weight=1e-4,
-                                name='Attention')(lstm)
+att = SeqSelfAttention(attention_type=SeqSelfAttention.ATTENTION_TYPE_MUL,
+                       kernel_regularizer=keras.regularizers.l2(1e-4),
+                       bias_regularizer=keras.regularizers.l1(1e-4),
+                       attention_regularizer_weight=1e-4,
+                       name='Attention')(lstm)
 dense = keras.layers.Dense(units=5, name='Dense')(att)
-model = keras.models.Model(inputs=inputs, outputs=[dense, weights])
+model = keras.models.Model(inputs=inputs, outputs=[dense])
 model.compile(
     optimizer='adam',
     loss={'Dense': 'sparse_categorical_crossentropy'},
     metrics={'Dense': 'categorical_accuracy'},
 )
 model.summary(line_length=100)
-model.fit(
-    x=x,
-    y=numpy.zeros((batch_size, sentence_len, 1)),,
-    epochs=10,
-)
 ```
 
 ### Load the Model
@@ -129,7 +124,7 @@ keras.models.load_model(model_path, custom_objects=SeqSelfAttention.get_custom_o
 When there are multiple inputs, the second input is considered as positions:
 
 ```python
-positions = keras.layers.Input(shape=(pos_num,), name='Input-Pos')
+positions = keras.layers.Input(shape=(seq_len,), name='Input-Pos')
 SeqSelfAttention(name='Attention')([lstm, positions])
 ```
 
@@ -138,8 +133,11 @@ SeqSelfAttention(name='Attention')([lstm, positions])
 Set `history_only` to `True` when only historical data could be used:
 
 ```python
-positions = keras.layers.Input(shape=(pos_num,), name='Input-Pos')
-SeqSelfAttention(attention_width=3, history_only=True, name='Attention')([lstm, positions])
+SeqSelfAttention(
+    attention_width=3,
+    history_only=True,
+    name='Attention',
+)
 ```
 
 ### Multi-Head
