@@ -39,6 +39,6 @@ class TestAttention(unittest.TestCase):
         predict = model.predict(inputs)[0]
         self.assertTrue(np.allclose(predict[0], predict[3]))
         self.assertTrue(np.allclose(
-            np.asarray([0.24973875, 0.41574854, 0.44609764, 0.644485, 0.47796533]),
+            np.asarray([0.27883747, 0.45767492, 0.47448885, 0.69199574, 0.47368336]),
             predict[2],
         ), predict[2])

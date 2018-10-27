@@ -55,7 +55,7 @@ class ScaledDotProductAttention(keras.layers.Layer):
             ones = tf.ones((query_len, key_len))
             e -= (ones - tf.matrix_band_part(ones, -1, 0)) * 1e9
         if isinstance(mask, list) and mask[-1] is not None:
-            e -= (1.0 - K.cast(K.expand_dims(mask[-1]), K.floatx())) * 1e9
+            e -= (1.0 - K.cast(K.expand_dims(mask[-1], axis=-2), K.floatx())) * 1e9
         a = keras.activations.softmax(e)
         v = K.batch_dot(a, value)
         if self.return_attention:
