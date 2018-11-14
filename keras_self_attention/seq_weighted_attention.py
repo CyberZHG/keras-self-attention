@@ -3,6 +3,10 @@ from keras import backend as K
 
 
 class SeqWeightedAttention(keras.layers.Layer):
+    """Y = \text{softmax}(XW + b) X
+
+    See: https://arxiv.org/pdf/1708.00524.pdf
+    """
 
     def __init__(self, use_bias=True, return_attention=False, **kwargs):
         self.supports_masking = True
