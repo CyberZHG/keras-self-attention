@@ -54,7 +54,7 @@ class SeqSelfAttention(keras.layers.Layer):
         self.return_attention = return_attention
         self.history_only = history_only
         if history_only and attention_width is None:
-            self.attention_width = int(1e10)
+            self.attention_width = int(1e9)
 
         self.use_additive_bias = use_additive_bias
         self.use_attention_bias = use_attention_bias
