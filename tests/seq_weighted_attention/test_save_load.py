@@ -29,11 +29,7 @@ class TestSaveLoad(unittest.TestCase):
         else:
             outputs = dense
         model = keras.models.Model(inputs=inputs, outputs=outputs)
-        model.compile(
-            optimizer='adam',
-            loss=loss,
-            metrics={'Softmax': 'sparse_categorical_accuracy'},
-        )
+        model.compile(optimizer='adam', loss=loss)
         model_path = os.path.join(tempfile.gettempdir(), 'keras_weighted_att_test_sl_%f.h5' % random.random())
         model.save(model_path)
         model = keras.models.load_model(model_path, custom_objects=Attention.get_custom_objects())

@@ -51,11 +51,7 @@ class TestMaskShape(unittest.TestCase):
             loss[attention.name] = 'mse'
         else:
             model = keras.models.Model(inputs=inputs, outputs=dense)
-        model.compile(
-            optimizer='adam',
-            loss=loss,
-            metrics={'Dense': 'sparse_categorical_crossentropy'},
-        )
+        model.compile(optimizer='adam', loss=loss)
         model.summary(line_length=100)
         return model
 

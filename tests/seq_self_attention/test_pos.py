@@ -27,7 +27,6 @@ class TestPos(TestMaskShape):
                 'Dense': 'sparse_categorical_crossentropy',
                 'Attention': 'mse',
             },
-            metrics={'Dense': 'sparse_categorical_accuracy'},
         )
         model.summary(line_length=120)
         return model

@@ -35,27 +35,38 @@ class ScaledDotProductAttention(keras.layers.Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
     def compute_output_shape(self, input_shape):
+        if isinstance(input_shape, list):
+            query_shape, key_shape, value_shape = input_shape
+        else:
+            query_shape = key_shape = value_shape = input_shape
+        output_shape = query_shape[:-1] + value_shape[-1:]
         if self.return_attention:
-            return [input_shape[-1], input_shape[0][:2] + (input_shape[1][1],)]
-        return input_shape[-1]
+            attention_shape = query_shape[:2] + (key_shape[1],)
+            return [output_shape, attention_shape]
+        return output_shape
 
     def compute_mask(self, inputs, mask=None):
         if isinstance(mask, list):
-            mask = mask[-1]
+            mask = mask[0]
         if self.return_attention:
             return [mask, None]
         return mask
 
     def call(self, inputs, mask=None, **kwargs):
-        query, key, value = inputs
+        if isinstance(inputs, list):
+            query, key, value = inputs
+        else:
+            query = key = value = inputs
+        if isinstance(mask, list):
+            mask = mask[1]
         feature_dim = K.shape(query)[-1]
         e = K.batch_dot(query, key, axes=2) / K.sqrt(K.cast(feature_dim, dtype=K.floatx()))
         if self.history_only:
             query_len, key_len = K.shape(query)[1], K.shape(key)[1]
             ones = tf.ones((query_len, key_len))
             e -= (ones - tf.matrix_band_part(ones, -1, 0)) * 1e9
-        if isinstance(mask, list) and mask[-1] is not None:
-            e -= (1.0 - K.cast(K.expand_dims(mask[-1], axis=-2), K.floatx())) * 1e9
+        if mask is not None:
+            e -= (1.0 - K.cast(K.expand_dims(mask, axis=-2), K.floatx())) * 1e9
         a = keras.activations.softmax(e)
         v = K.batch_dot(a, value)
         if self.return_attention:

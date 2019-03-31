@@ -18,11 +18,7 @@ class TestSaveLoad(unittest.TestCase):
             name='Attention',
         )([input_q, input_k, input_v])
         model = keras.models.Model(inputs=[input_q, input_k, input_v], outputs=[attention, weights])
-        model.compile(
-            optimizer='adam',
-            loss='mse',
-            metrics={},
-        )
+        model.compile(optimizer='adam', loss='mse')
         model_path = os.path.join(tempfile.gettempdir(), 'keras_self_att_test_sl_%f.h5' % random.random())
         model.save(model_path)
         model = keras.models.load_model(

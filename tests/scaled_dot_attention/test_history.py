@@ -31,11 +31,7 @@ class TestHistory(unittest.TestCase):
             name='Attention',
         )([embed_layer, embed_layer, embed_layer])
         model = keras.models.Model(inputs=input_layer, outputs=[att_layer, att_weights])
-        model.compile(
-            optimizer='adam',
-            loss='mse',
-            metrics={},
-        )
+        model.compile(optimizer='adam', loss='mse')
         model.summary()
         inputs = np.array([[1, 2, 3, 1, 0]])
         predicts = model.predict(inputs)
