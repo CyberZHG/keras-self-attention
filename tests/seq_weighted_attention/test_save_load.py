@@ -1,7 +1,7 @@
 import unittest
 import os
 import tempfile
-import random
+import numpy as np
 import keras
 from keras_self_attention import SeqWeightedAttention as Attention
 
@@ -30,7 +30,7 @@ class TestSaveLoad(unittest.TestCase):
             outputs = dense
         model = keras.models.Model(inputs=inputs, outputs=outputs)
         model.compile(optimizer='adam', loss=loss)
-        model_path = os.path.join(tempfile.gettempdir(), 'keras_weighted_att_test_sl_%f.h5' % random.random())
+        model_path = os.path.join(tempfile.gettempdir(), 'keras_weighted_att_test_sl_%f.h5' % np.random.random())
         model.save(model_path)
         model = keras.models.load_model(model_path, custom_objects=Attention.get_custom_objects())
         model.summary(line_length=100)
