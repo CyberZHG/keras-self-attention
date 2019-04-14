@@ -119,15 +119,6 @@ import keras
 keras.models.load_model(model_path, custom_objects=SeqSelfAttention.get_custom_objects())
 ```
 
-### Select Positions
-
-When there are multiple inputs, the second input is considered as positions:
-
-```python
-positions = keras.layers.Input(shape=(seq_len,), name='Input-Pos')
-SeqSelfAttention(name='Attention')([lstm, positions])
-```
-
 ### History Only
 
 Set `history_only` to `True` when only historical data could be used:

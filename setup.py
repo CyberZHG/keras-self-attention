@@ -12,7 +12,7 @@ with codecs.open('requirements.txt', 'r', 'utf8') as reader:
 
 setup(
     name='keras-self-attention',
-    version='0.38.0',
+    version='0.39.0',
     packages=find_packages(),
     url='https://github.com/CyberZHG/keras-self-attention',
     license='MIT',

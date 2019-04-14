@@ -156,13 +156,6 @@ class SeqSelfAttention(keras.layers.Layer):
                                       constraint=self.bias_constraint)
 
     def call(self, inputs, mask=None, **kwargs):
-        if isinstance(inputs, list):
-            inputs, positions = inputs
-            positions = K.cast(positions, 'int32')
-            mask = mask[1]
-        else:
-            positions = None
-
         input_len = K.shape(inputs)[1]
 
         if self.attention_type == SeqSelfAttention.ATTENTION_TYPE_ADD:
@@ -174,41 +167,27 @@ class SeqSelfAttention(keras.layers.Layer):
             e = self.attention_activation(e)
         e = K.exp(e - K.max(e, axis=-1, keepdims=True))
         if self.attention_width is not None:
-            ones = tf.ones((input_len, input_len))
             if self.history_only:
-                local = tf.matrix_band_part(
-                    ones,
-                    K.minimum(input_len, self.attention_width - 1),
-                    0,
-                )
+                lower = K.arange(input_len) - (self.attention_width - 1)
             else:
-                local = tf.matrix_band_part(
-                    ones,
-                    K.minimum(input_len, self.attention_width // 2),
-                    K.minimum(input_len, (self.attention_width - 1) // 2),
-                )
-            e = e * K.expand_dims(local, 0)
+                lower = K.arange(input_len) - self.attention_width // 2
+            lower = K.expand_dims(lower, axis=-1)
+            upper = lower + self.attention_width
+            indices = K.tile(K.expand_dims(K.arange(input_len), axis=0), [input_len, 1])
+            e = e * K.cast(lower <= indices, K.floatx()) * K.cast(indices < upper, K.floatx())
         if mask is not None:
             mask = K.cast(mask, K.floatx())
             mask = K.expand_dims(mask)
             e = K.permute_dimensions(K.permute_dimensions(e * mask, (0, 2, 1)) * mask, (0, 2, 1))
 
         # a_{t} = \text{softmax}(e_t)
-        s = K.sum(e, axis=-1)
-        s = K.tile(K.expand_dims(s, axis=-1), K.stack([1, 1, input_len]))
+        s = K.sum(e, axis=-1, keepdims=True)
         a = e / (s + K.epsilon())
 
         # l_t = \sum_{t'} a_{t, t'} x_{t'}
         v = K.batch_dot(a, inputs)
         if self.attention_regularizer_weight > 0.0:
             self.add_loss(self._attention_regularizer(a))
-
-        if positions is not None:
-            pos_num = K.shape(positions)[1]
-            batch_indices = K.tile(K.expand_dims(K.arange(K.shape(inputs)[0]), axis=-1), K.stack([1, pos_num]))
-            pos_indices = K.stack([batch_indices, positions], axis=-1)
-            v = tf.gather_nd(v, pos_indices)
-            a = tf.gather_nd(a, pos_indices)
 
         if self.return_attention:
             return [v, a]
@@ -220,8 +199,8 @@ class SeqSelfAttention(keras.layers.Layer):
 
         # h_{t, t'} = \tanh(x_t^T W_t + x_{t'}^T W_x + b_h)
         q, k = K.dot(inputs, self.Wt), K.dot(inputs, self.Wx)
-        q = K.tile(K.expand_dims(q, 2), K.stack([1, 1, input_len, 1]))
-        k = K.tile(K.expand_dims(k, 1), K.stack([1, input_len, 1, 1]))
+        q = K.tile(K.expand_dims(q, 2), [1, 1, input_len, 1])
+        k = K.tile(K.expand_dims(k, 1), [1, input_len, 1, 1])
         if self.use_additive_bias:
             h = K.tanh(q + k + self.bh)
         else:
@@ -262,9 +241,12 @@ class SeqSelfAttention(keras.layers.Layer):
     def _attention_regularizer(self, attention):
         batch_size = K.cast(K.shape(attention)[0], K.floatx())
         input_len = K.shape(attention)[-1]
+        indices = K.tile(K.expand_dims(K.arange(input_len), axis=0), [input_len, 1])
+        diagonal = K.expand_dims(K.arange(input_len), axis=-1)
+        eye = K.cast(K.equal(indices, diagonal), K.floatx())
         return self.attention_regularizer_weight * K.sum(K.square(K.batch_dot(
             attention,
-            K.permute_dimensions(attention, (0, 2, 1))) - tf.eye(input_len))) / batch_size
+            K.permute_dimensions(attention, (0, 2, 1))) - eye)) / batch_size
 
     @staticmethod
     def get_custom_objects():
