@@ -1,6 +1,5 @@
 import keras
 import keras.backend as K
-import tensorflow as tf
 
 
 class ScaledDotProductAttention(keras.layers.Layer):
@@ -61,13 +60,15 @@ class ScaledDotProductAttention(keras.layers.Layer):
             mask = mask[1]
         feature_dim = K.shape(query)[-1]
         e = K.batch_dot(query, key, axes=2) / K.sqrt(K.cast(feature_dim, dtype=K.floatx()))
+        e = K.exp(e - K.max(e, axis=-1, keepdims=True))
         if self.history_only:
             query_len, key_len = K.shape(query)[1], K.shape(key)[1]
-            ones = tf.ones((query_len, key_len))
-            e -= (ones - tf.matrix_band_part(ones, -1, 0)) * 1e9
+            indices = K.tile(K.expand_dims(K.arange(key_len), axis=0), [query_len, 1])
+            upper = K.expand_dims(K.arange(key_len), axis=-1)
+            e *= K.expand_dims(K.cast(indices <= upper, K.floatx()), axis=0)
         if mask is not None:
-            e -= (1.0 - K.cast(K.expand_dims(mask, axis=-2), K.floatx())) * 1e9
-        a = keras.activations.softmax(e)
+            e *= K.cast(K.expand_dims(mask, axis=-2), K.floatx())
+        a = e / K.sum(e, axis=-1, keepdims=True)
         v = K.batch_dot(a, value)
         if self.return_attention:
             return [v, a]
