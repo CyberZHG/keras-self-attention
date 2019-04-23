@@ -3,7 +3,7 @@ import keras.backend as K
 
 
 class ScaledDotProductAttention(keras.layers.Layer):
-    """The attention layer that takes three inputs representing queries, keys and values.
+    r"""The attention layer that takes three inputs representing queries, keys and values.
 
     \text{Attention}(Q, K, V) = \text{softmax}(\frac{Q K^T}{\sqrt{d_k}}) V
 
@@ -20,10 +20,10 @@ class ScaledDotProductAttention(keras.layers.Layer):
         :param history_only: Whether to only use history data.
         :param kwargs: Arguments for parent class.
         """
+        super(ScaledDotProductAttention, self).__init__(**kwargs)
         self.supports_masking = True
         self.return_attention = return_attention
         self.history_only = history_only
-        super(ScaledDotProductAttention, self).__init__(**kwargs)
 
     def get_config(self):
         config = {
@@ -63,8 +63,8 @@ class ScaledDotProductAttention(keras.layers.Layer):
         e = K.exp(e - K.max(e, axis=-1, keepdims=True))
         if self.history_only:
             query_len, key_len = K.shape(query)[1], K.shape(key)[1]
-            indices = K.tile(K.expand_dims(K.arange(key_len), axis=0), [query_len, 1])
-            upper = K.expand_dims(K.arange(key_len), axis=-1)
+            indices = K.expand_dims(K.arange(key_len), axis=0)
+            upper = K.expand_dims(K.arange(query_len), axis=-1)
             e *= K.expand_dims(K.cast(indices <= upper, K.floatx()), axis=0)
         if mask is not None:
             e *= K.cast(K.expand_dims(mask, axis=-2), K.floatx())

@@ -3,17 +3,17 @@ from keras import backend as K
 
 
 class SeqWeightedAttention(keras.layers.Layer):
-    """Y = \text{softmax}(XW + b) X
+    r"""Y = \text{softmax}(XW + b) X
 
     See: https://arxiv.org/pdf/1708.00524.pdf
     """
 
     def __init__(self, use_bias=True, return_attention=False, **kwargs):
+        super(SeqWeightedAttention, self).__init__(**kwargs)
         self.supports_masking = True
         self.use_bias = use_bias
         self.return_attention = return_attention
         self.W, self.b = None, None
-        super(SeqWeightedAttention, self).__init__(** kwargs)
 
     def get_config(self):
         config = {

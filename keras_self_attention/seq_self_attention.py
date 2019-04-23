@@ -1,6 +1,5 @@
 import keras
 import keras.backend as K
-import tensorflow as tf
 
 
 class SeqSelfAttention(keras.layers.Layer):
@@ -47,6 +46,7 @@ class SeqSelfAttention(keras.layers.Layer):
         :param attention_regularizer_weight: The weights of attention regularizer.
         :param kwargs: Parameters for parent class.
         """
+        super(SeqSelfAttention, self).__init__(**kwargs)
         self.supports_masking = True
         self.units = units
         self.attention_width = attention_width
@@ -76,8 +76,6 @@ class SeqSelfAttention(keras.layers.Layer):
         else:
             raise NotImplementedError('No implementation for attention type : ' + attention_type)
 
-        super(SeqSelfAttention, self).__init__(**kwargs)
-
     def get_config(self):
         config = {
             'units': self.units,
@@ -100,8 +98,6 @@ class SeqSelfAttention(keras.layers.Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
     def build(self, input_shape):
-        if isinstance(input_shape, list):
-            input_shape = input_shape[0]
         if self.attention_type == SeqSelfAttention.ATTENTION_TYPE_ADD:
             self._build_additive_attention(input_shape)
         elif self.attention_type == SeqSelfAttention.ATTENTION_TYPE_MUL:
@@ -173,7 +169,7 @@ class SeqSelfAttention(keras.layers.Layer):
                 lower = K.arange(input_len) - self.attention_width // 2
             lower = K.expand_dims(lower, axis=-1)
             upper = lower + self.attention_width
-            indices = K.tile(K.expand_dims(K.arange(input_len), axis=0), [input_len, 1])
+            indices = K.expand_dims(K.arange(input_len), axis=0)
             e = e * K.cast(lower <= indices, K.floatx()) * K.cast(indices < upper, K.floatx())
         if mask is not None:
             mask = K.cast(mask, K.floatx())
@@ -198,9 +194,8 @@ class SeqSelfAttention(keras.layers.Layer):
         batch_size, input_len = input_shape[0], input_shape[1]
 
         # h_{t, t'} = \tanh(x_t^T W_t + x_{t'}^T W_x + b_h)
-        q, k = K.dot(inputs, self.Wt), K.dot(inputs, self.Wx)
-        q = K.tile(K.expand_dims(q, 2), [1, 1, input_len, 1])
-        k = K.tile(K.expand_dims(k, 1), [1, input_len, 1, 1])
+        q = K.expand_dims(K.dot(inputs, self.Wt), 2)
+        k = K.expand_dims(K.dot(inputs, self.Wx), 1)
         if self.use_additive_bias:
             h = K.tanh(q + k + self.bh)
         else:
@@ -217,23 +212,17 @@ class SeqSelfAttention(keras.layers.Layer):
         # e_{t, t'} = x_t^T W_a x_{t'} + b_a
         e = K.batch_dot(K.dot(inputs, self.Wa), K.permute_dimensions(inputs, (0, 2, 1)))
         if self.use_attention_bias:
-            e = e + self.ba
+            e += self.ba[0]
         return e
 
     def compute_output_shape(self, input_shape):
-        if isinstance(input_shape, list):
-            input_shape, pos_shape = input_shape
-            output_shape = (input_shape[0], pos_shape[1], input_shape[2])
-        else:
-            output_shape = input_shape
+        output_shape = input_shape
         if self.return_attention:
             attention_shape = (input_shape[0], output_shape[1], input_shape[1])
             return [output_shape, attention_shape]
         return output_shape
 
     def compute_mask(self, inputs, mask=None):
-        if isinstance(inputs, list):
-            mask = mask[1]
         if self.return_attention:
             return [mask, None]
         return mask
