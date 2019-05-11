@@ -164,12 +164,12 @@ class SeqSelfAttention(keras.layers.Layer):
         e = K.exp(e - K.max(e, axis=-1, keepdims=True))
         if self.attention_width is not None:
             if self.history_only:
-                lower = K.arange(input_len) - (self.attention_width - 1)
+                lower = K.arange(0, input_len) - (self.attention_width - 1)
             else:
-                lower = K.arange(input_len) - self.attention_width // 2
+                lower = K.arange(0, input_len) - self.attention_width // 2
             lower = K.expand_dims(lower, axis=-1)
             upper = lower + self.attention_width
-            indices = K.expand_dims(K.arange(input_len), axis=0)
+            indices = K.expand_dims(K.arange(0, input_len), axis=0)
             e = e * K.cast(lower <= indices, K.floatx()) * K.cast(indices < upper, K.floatx())
         if mask is not None:
             mask = K.cast(mask, K.floatx())
@@ -230,8 +230,8 @@ class SeqSelfAttention(keras.layers.Layer):
     def _attention_regularizer(self, attention):
         batch_size = K.cast(K.shape(attention)[0], K.floatx())
         input_len = K.shape(attention)[-1]
-        indices = K.tile(K.expand_dims(K.arange(input_len), axis=0), [input_len, 1])
-        diagonal = K.expand_dims(K.arange(input_len), axis=-1)
+        indices = K.tile(K.expand_dims(K.arange(0, input_len), axis=0), [input_len, 1])
+        diagonal = K.expand_dims(K.arange(0, input_len), axis=-1)
         eye = K.cast(K.equal(indices, diagonal), K.floatx())
         return self.attention_regularizer_weight * K.sum(K.square(K.batch_dot(
             attention,
