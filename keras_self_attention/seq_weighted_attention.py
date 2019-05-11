@@ -1,5 +1,5 @@
-import keras
-from keras import backend as K
+from .backend import keras
+from .backend import backend as K
 
 
 class SeqWeightedAttention(keras.layers.Layer):
@@ -24,7 +24,7 @@ class SeqWeightedAttention(keras.layers.Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
     def build(self, input_shape):
-        self.W = self.add_weight(shape=(input_shape[2], 1),
+        self.W = self.add_weight(shape=(int(input_shape[2]), 1),
                                  name='{}_W'.format(self.name),
                                  initializer=keras.initializers.get('uniform'))
         if self.use_bias:

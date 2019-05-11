@@ -1,4 +1,4 @@
-import keras
+from keras_self_attention.backend import keras
 from keras_self_attention import SeqSelfAttention
 from .util import TestMaskShape
 

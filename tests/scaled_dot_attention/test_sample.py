@@ -1,6 +1,6 @@
 import unittest
-import keras
 import numpy as np
+from keras_self_attention.backend import keras
 from keras_self_attention import ScaledDotProductAttention
 
 
