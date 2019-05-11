@@ -19,7 +19,7 @@ class SelfAttentionBrute(keras.engine.Layer):
         super(SelfAttentionBrute, self).__init__(** kwargs)
 
     def build(self, input_shape):
-        feature_dim = input_shape[2]
+        feature_dim = int(input_shape[2])
 
         self.Wt = self.add_weight(shape=(feature_dim, self.units),
                                   name='{}_Add_Wt'.format(self.name),
