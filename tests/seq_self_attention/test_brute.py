@@ -1,9 +1,8 @@
-import random
-import keras
-import keras.backend as K
-import numpy
+import numpy as np
 import tensorflow as tf
 import unittest
+from keras_self_attention.backend import keras
+from keras_self_attention.backend import backend as K
 from keras_self_attention import SeqSelfAttention
 
 
@@ -64,15 +63,14 @@ class TestBrute(unittest.TestCase):
 
     @staticmethod
     def _reset_seed(seed):
-        random.seed(seed)
-        numpy.random.seed(seed)
+        np.random.seed(seed)
         tf.set_random_seed(seed)
 
     def test_same_as_brute(self):
         batch_size, sentence_len, feature_dim, units = 2, 3, 5, 7
-        test_x = numpy.random.rand(batch_size, sentence_len, feature_dim)
+        test_x = np.random.rand(batch_size, sentence_len, feature_dim)
 
-        seed = random.randint(0, 1000)
+        seed = np.random.randint(0, 1000)
         self._reset_seed(seed)
         inp = keras.layers.Input((sentence_len, feature_dim))
         att = SeqSelfAttention(units=units, kernel_initializer='glorot_normal', bias_initializer='zeros')
@@ -89,4 +87,4 @@ class TestBrute(unittest.TestCase):
         predict_2 = model.predict(test_x)
         self.assertEqual((batch_size, sentence_len, feature_dim), predict_2.shape)
 
-        self.assertTrue(numpy.allclose(predict_1, predict_2))
+        self.assertTrue(np.allclose(predict_1, predict_2))

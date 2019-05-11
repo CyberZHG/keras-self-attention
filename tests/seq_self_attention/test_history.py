@@ -1,5 +1,3 @@
-import keras
-import numpy as np
 from keras_self_attention import SeqSelfAttention
 from .util import TestMaskShape
 

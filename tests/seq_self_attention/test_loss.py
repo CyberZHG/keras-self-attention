@@ -1,5 +1,5 @@
-import keras
-import numpy
+import numpy as np
+from keras_self_attention.backend import keras
 from keras_self_attention import SeqSelfAttention
 from .util import TestMaskShape
 
@@ -18,7 +18,7 @@ class TestLoss(TestMaskShape):
         sentence_len = input_data.shape[1]
         model.fit(
             x=input_data,
-            y=numpy.zeros((len(sentences), sentence_len, 1)),
+            y=np.zeros((len(sentences), sentence_len, 1)),
             epochs=10,
         )
         self.assertTrue(model is not None)

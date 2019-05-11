@@ -1,5 +1,5 @@
-import keras
-import keras.backend as K
+from .backend import keras
+from .backend import backend as K
 
 
 class ScaledDotProductAttention(keras.layers.Layer):
@@ -63,8 +63,8 @@ class ScaledDotProductAttention(keras.layers.Layer):
         e = K.exp(e - K.max(e, axis=-1, keepdims=True))
         if self.history_only:
             query_len, key_len = K.shape(query)[1], K.shape(key)[1]
-            indices = K.expand_dims(K.arange(key_len), axis=0)
-            upper = K.expand_dims(K.arange(query_len), axis=-1)
+            indices = K.expand_dims(K.arange(0, key_len), axis=0)
+            upper = K.expand_dims(K.arange(0, query_len), axis=-1)
             e *= K.expand_dims(K.cast(indices <= upper, K.floatx()), axis=0)
         if mask is not None:
             e *= K.cast(K.expand_dims(mask, axis=-2), K.floatx())

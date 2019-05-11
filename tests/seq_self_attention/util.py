@@ -1,7 +1,6 @@
 import unittest
-import random
-import numpy
-import keras
+import numpy as np
+from keras_self_attention.backend import keras
 
 
 class TestMaskShape(unittest.TestCase):
@@ -23,12 +22,12 @@ class TestMaskShape(unittest.TestCase):
             for j, token in enumerate(sentence):
                 if token in token_dict:
                     input_data[i][j] = token_dict[token]
-                elif random.randint(0, 5) == 0:
+                elif np.random.randint(0, 5) == 0:
                     input_data[i][j] = token_dict['<UNK>']
                 else:
                     input_data[i][j] = len(token_dict)
                     token_dict[token] = len(token_dict)
-        return sentences, numpy.asarray(input_data), token_dict
+        return sentences, np.asarray(input_data), token_dict
 
     @staticmethod
     def get_model(attention, token_dict):
@@ -79,4 +78,4 @@ class TestMaskShape(unittest.TestCase):
                     else:
                         self.assertEqual(attention_output[i][j][k], 0.0, attention_output[i])
                 if j < len(sentence):
-                    self.assertTrue(abs(numpy.sum(attention_output[i][j]) - 1.0) < 1e-6, attention_output[i])
+                    self.assertTrue(abs(np.sum(attention_output[i][j]) - 1.0) < 1e-6, attention_output[i])

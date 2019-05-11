@@ -1,5 +1,5 @@
-import keras
-import keras.backend as K
+from .backend import keras
+from .backend import backend as K
 
 
 class SeqSelfAttention(keras.layers.Layer):
@@ -105,7 +105,7 @@ class SeqSelfAttention(keras.layers.Layer):
         super(SeqSelfAttention, self).build(input_shape)
 
     def _build_additive_attention(self, input_shape):
-        feature_dim = input_shape[2]
+        feature_dim = int(input_shape[2])
 
         self.Wt = self.add_weight(shape=(feature_dim, self.units),
                                   name='{}_Add_Wt'.format(self.name),
@@ -137,7 +137,7 @@ class SeqSelfAttention(keras.layers.Layer):
                                       constraint=self.bias_constraint)
 
     def _build_multiplicative_attention(self, input_shape):
-        feature_dim = input_shape[2]
+        feature_dim = int(input_shape[2])
 
         self.Wa = self.add_weight(shape=(feature_dim, feature_dim),
                                   name='{}_Mul_Wa'.format(self.name),
