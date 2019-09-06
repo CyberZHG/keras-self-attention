@@ -1,24 +1,24 @@
 import keras
-from keras_self_attention import Attention
+from keras_self_attention import SelfAttention
 from .util import TestMaskShape
 
 
 class TestLocal(TestMaskShape):
 
     def check_local_range(self, attention_type):
-        attention = Attention(return_attention=True,
-                              attention_width=5,
-                              attention_type=attention_type,
-                              kernel_regularizer=keras.regularizers.l2(1e-4),
-                              bias_regularizer=keras.regularizers.l1(1e-4),
-                              name='Attention')
+        attention = SelfAttention(return_attention=True,
+                                  attention_width=5,
+                                  attention_type=attention_type,
+                                  kernel_regularizer=keras.regularizers.l2(1e-4),
+                                  bias_regularizer=keras.regularizers.l1(1e-4),
+                                  name='Attention')
         self.check_mask_shape(attention)
 
     def test_add(self):
-        self.check_local_range(attention_type=Attention.ATTENTION_TYPE_ADD)
+        self.check_local_range(attention_type=SelfAttention.ATTENTION_TYPE_ADD)
 
     def test_mul(self):
-        self.check_local_range(attention_type=Attention.ATTENTION_TYPE_MUL)
+        self.check_local_range(attention_type=SelfAttention.ATTENTION_TYPE_MUL)
 
     def test_not_implemented(self):
         with self.assertRaises(NotImplementedError):
@@ -28,7 +28,7 @@ class TestLocal(TestMaskShape):
                                           mask_zero=True)(inputs)
             lstm = keras.layers.Bidirectional(keras.layers.LSTM(units=18,
                                                                 return_sequences=True))(embd)
-            att = Attention(attention_width=15)
+            att = SelfAttention(attention_width=15)
             att._backend = 'random'
             att = att(lstm)
             dense = keras.layers.Dense(units=5)(att)

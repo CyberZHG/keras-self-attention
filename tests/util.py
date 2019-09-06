@@ -2,7 +2,7 @@ import unittest
 import random
 import numpy
 import keras
-from keras_self_attention import Attention
+from keras_self_attention import SelfAttention
 
 
 class TestMaskShape(unittest.TestCase):
