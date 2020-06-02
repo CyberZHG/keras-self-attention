@@ -13,17 +13,22 @@ class ScaledDotProductAttention(keras.layers.Layer):
     def __init__(self,
                  return_attention=False,
                  history_only=False,
+                 epsilon=0.0,
                  **kwargs):
         """Initialize the layer.
 
         :param return_attention: Whether to return attention weights.
         :param history_only: Whether to only use history data.
+        :param epsilon: Generally, it's not necessary to set it to be positive,
+                        unless there are empty inputs.
         :param kwargs: Arguments for parent class.
         """
         super(ScaledDotProductAttention, self).__init__(**kwargs)
         self.supports_masking = True
         self.return_attention = return_attention
         self.history_only = history_only
+        self.epsilon = epsilon
+        self.intensity = self.attention = None
 
     def get_config(self):
         config = {
@@ -68,8 +73,9 @@ class ScaledDotProductAttention(keras.layers.Layer):
             e *= K.expand_dims(K.cast(indices <= upper, K.floatx()), axis=0)
         if mask is not None:
             e *= K.cast(K.expand_dims(mask, axis=-2), K.floatx())
-        a = e / (K.sum(e, axis=-1, keepdims=True) + K.epsilon())
-        v = K.batch_dot(a, value)
+        self.intensity = e
+        self.attention = e / (K.sum(e, axis=-1, keepdims=True) + self.epsilon)
+        v = K.batch_dot(self.attention, value)
         if self.return_attention:
-            return [v, a]
+            return [v, self.attention]
         return v
