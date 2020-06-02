@@ -40,7 +40,7 @@ class TestHistory(unittest.TestCase):
         self.assertTrue(np.allclose(
             np.asarray([0.2, 0.3, 0.4, 0.6, 0.5]),
             results[0],
-        ), results[2])
+        ), results[0])
         for i in range(4):
             for j in range(5):
                 if j > i:
