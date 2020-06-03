@@ -13,21 +13,17 @@ class ScaledDotProductAttention(keras.layers.Layer):
     def __init__(self,
                  return_attention=False,
                  history_only=False,
-                 epsilon=0.0,
                  **kwargs):
         """Initialize the layer.
 
         :param return_attention: Whether to return attention weights.
         :param history_only: Whether to only use history data.
-        :param epsilon: Generally, it's not necessary to set it to be positive,
-                        unless there are empty inputs.
         :param kwargs: Arguments for parent class.
         """
         super(ScaledDotProductAttention, self).__init__(**kwargs)
         self.supports_masking = True
         self.return_attention = return_attention
         self.history_only = history_only
-        self.epsilon = epsilon
         self.intensity = self.attention = None
 
     def get_config(self):
@@ -65,16 +61,15 @@ class ScaledDotProductAttention(keras.layers.Layer):
             mask = mask[1]
         feature_dim = K.shape(query)[-1]
         e = K.batch_dot(query, key, axes=2) / K.sqrt(K.cast(feature_dim, dtype=K.floatx()))
-        e = K.exp(e - K.max(e, axis=-1, keepdims=True))
         if self.history_only:
             query_len, key_len = K.shape(query)[1], K.shape(key)[1]
             indices = K.expand_dims(K.arange(0, key_len), axis=0)
             upper = K.expand_dims(K.arange(0, query_len), axis=-1)
-            e *= K.expand_dims(K.cast(indices <= upper, K.floatx()), axis=0)
+            e -= 10000.0 * K.expand_dims(K.cast(indices > upper, K.floatx()), axis=0)
         if mask is not None:
-            e *= K.cast(K.expand_dims(mask, axis=-2), K.floatx())
+            e -= 10000.0 * (1.0 - K.cast(K.expand_dims(mask, axis=-2), K.floatx()))
         self.intensity = e
-        self.attention = e / (K.sum(e, axis=-1, keepdims=True) + self.epsilon)
+        self.attention = keras.activations.softmax(e, axis=-1)
         v = K.batch_dot(self.attention, value)
         if self.return_attention:
             return [v, self.attention]
