@@ -161,7 +161,6 @@ class SeqSelfAttention(keras.layers.Layer):
 
         if self.attention_activation is not None:
             e = self.attention_activation(e)
-        e = K.exp(e - K.max(e, axis=-1, keepdims=True))
         if self.attention_width is not None:
             if self.history_only:
                 lower = K.arange(0, input_len) - (self.attention_width - 1)
@@ -170,15 +169,14 @@ class SeqSelfAttention(keras.layers.Layer):
             lower = K.expand_dims(lower, axis=-1)
             upper = lower + self.attention_width
             indices = K.expand_dims(K.arange(0, input_len), axis=0)
-            e = e * K.cast(lower <= indices, K.floatx()) * K.cast(indices < upper, K.floatx())
+            e -= 10000.0 * (K.cast(indices < lower, K.floatx()) * K.cast(upper <= indices, K.floatx()))
         if mask is not None:
-            mask = K.cast(mask, K.floatx())
-            mask = K.expand_dims(mask)
-            e = K.permute_dimensions(K.permute_dimensions(e * mask, (0, 2, 1)) * mask, (0, 2, 1))
+            mask = K.expand_dims(K.cast(mask, K.floatx()), axis=-1)
+            e -= 10000.0 * ((1.0 - mask) * (1.0 - K.permute_dimensions(mask, (0, 2, 1))))
 
         # a_{t} = \text{softmax}(e_t)
-        s = K.sum(e, axis=-1, keepdims=True)
-        a = e / (s + K.epsilon())
+        e = K.exp(e - K.max(e, axis=-1, keepdims=True))
+        a = e / K.sum(e, axis=-1, keepdims=True)
 
         # l_t = \sum_{t'} a_{t, t'} x_{t'}
         v = K.batch_dot(a, inputs)

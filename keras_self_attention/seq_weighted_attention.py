@@ -39,10 +39,10 @@ class SeqWeightedAttention(keras.layers.Layer):
             logits += self.b
         x_shape = K.shape(x)
         logits = K.reshape(logits, (x_shape[0], x_shape[1]))
-        ai = K.exp(logits - K.max(logits, axis=-1, keepdims=True))
         if mask is not None:
             mask = K.cast(mask, K.floatx())
-            ai = ai * mask
+            logits -= 10000.0 * (1.0 - mask)
+        ai = K.exp(logits - K.max(logits, axis=-1, keepdims=True))
         att_weights = ai / (K.sum(ai, axis=1, keepdims=True) + K.epsilon())
         weighted_input = x * K.expand_dims(att_weights)
         result = K.sum(weighted_input, axis=1)
