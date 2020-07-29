@@ -71,4 +71,6 @@ class TestMaskShape(unittest.TestCase):
                         self.assertGreater(attention_output[i][j][k], 0.0)
                     elif not history_only and abs(j - k) <= attention_width // 2:
                         self.assertGreater(attention_output[i][j][k], 0.0)
+                    else:
+                        self.assertEqual(attention_output[i][j][k], 0.0)
                 self.assertTrue(abs(np.sum(attention_output[i][j]) - 1.0) < 1e-6)
