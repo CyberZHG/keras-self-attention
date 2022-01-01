@@ -1,6 +1,7 @@
 import unittest
+
 import numpy as np
-from keras_self_attention.backend import keras
+from tensorflow import keras
 
 
 class TestMaskShape(unittest.TestCase):

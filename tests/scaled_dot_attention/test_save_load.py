@@ -1,8 +1,10 @@
 import unittest
 import os
 import tempfile
+
 import numpy as np
-from keras_self_attention.backend import keras
+from tensorflow import keras
+
 from keras_self_attention import ScaledDotProductAttention
 
 

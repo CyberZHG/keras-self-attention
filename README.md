@@ -1,9 +1,6 @@
 # Keras Self-Attention
 
-[![Travis](https://travis-ci.com/CyberZHG/keras-self-attention.svg)](https://travis-ci.com/CyberZHG/keras-self-attention)
-[![Coverage](https://coveralls.io/repos/github/CyberZHG/keras-self-attention/badge.svg?branch=master)](https://coveralls.io/github/CyberZHG/keras-self-attention)
 [![Version](https://img.shields.io/pypi/v/keras-self-attention.svg)](https://pypi.org/project/keras-self-attention/)
-![Downloads](https://img.shields.io/pypi/dm/keras-self-attention.svg)
 ![License](https://img.shields.io/pypi/l/keras-self-attention.svg)
 
 \[[中文](https://github.com/CyberZHG/keras-self-attention/blob/master/README.zh-CN.md)|[English](https://github.com/CyberZHG/keras-self-attention/blob/master/README.md)\]

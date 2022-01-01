@@ -3,8 +3,8 @@ import tempfile
 import unittest
 
 import numpy as np
+from tensorflow import keras
 
-from keras_self_attention.backend import keras
 from keras_self_attention import ResidualScaledDotProductAttention
 
 
