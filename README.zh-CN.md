@@ -25,7 +25,7 @@ pip install keras-self-attention
 默认情况下，注意力层使用加性注意力机制，并使用全部上下文进行计算。下面的代码根据页首的公式创建了一个注意力层（`attention_activation`是注意力权重`e_{t, t'}`）：
 
 ```python
-import keras
+from tensorflow import keras
 from keras_self_attention import SeqSelfAttention
 
 
@@ -85,7 +85,7 @@ SeqSelfAttention(
 通过将`attention_regularizer_weight`设置为一个正数来使用正则化：
 
 ```python
-import keras
+from tensorflow import keras
 from keras_self_attention import SeqSelfAttention
 
 inputs = keras.layers.Input(shape=(None,))
@@ -114,7 +114,7 @@ model.summary(line_length=100)
 Make sure to add `SeqSelfAttention` to custom objects:
 
 ```python
-import keras
+from tensorflow import keras
 
 keras.models.load_model(model_path, custom_objects=SeqSelfAttention.get_custom_objects())
 ```

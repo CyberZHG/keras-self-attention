@@ -25,7 +25,7 @@ pip install keras-self-attention
 By default, the attention layer uses additive attention and considers the whole context while calculating the relevance. The following code creates an attention layer that follows the equations in the first section (`attention_activation` is the activation function of `e_{t, t'}`):
 
 ```python
-import keras
+from tensorflow import keras
 from keras_self_attention import SeqSelfAttention
 
 
@@ -85,7 +85,7 @@ SeqSelfAttention(
 To use the regularizer, set `attention_regularizer_weight` to a positive number:
 
 ```python
-import keras
+from tensorflow import keras
 from keras_self_attention import SeqSelfAttention
 
 inputs = keras.layers.Input(shape=(None,))
@@ -114,7 +114,7 @@ model.summary(line_length=100)
 Make sure to add `SeqSelfAttention` to custom objects:
 
 ```python
-import keras
+from tensorflow import keras
 
 keras.models.load_model(model_path, custom_objects=SeqSelfAttention.get_custom_objects())
 ```
